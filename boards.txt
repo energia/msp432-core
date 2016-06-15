@@ -1,0 +1,17 @@
+##############################################################
+menu.cpu=Processor
+MSP-EXP432P401R.vid.0=0x2341
+MSP-EXP432P401R.pid.0=0x0c9f
+MSP-EXP432P401R.name=LaunchPad w/ msp432 EMT (48MHz)
+MSP-EXP432P401R.upload.maximum_size=262144
+MSP-EXP432P401R.upload.maximum_ram_size=65536
+MSP-EXP432P401R.build.mcu=cortex-m4
+MSP-EXP432P401R.build.f_cpu=48000000L
+MSP-EXP432P401R.build.core=msp432
+MSP-EXP432P401R.build.variant=MSP_EXP432P401R
+MSP-EXP432P401R.build.board=MSP_EXP432P401R
+MSP-EXP432P401R.build.ldscript=ti/runtime/wiring/msp432/linker.cmd
+MSP-EXP432P401R.upload.tool=dslite
+MSP-EXP432P401R.upload.protocol=dslite
+MSP-EXP432P401R.upload.maximum_size=131072
+MSP-EXP432P401R.upload.maximum_data_size=8192
