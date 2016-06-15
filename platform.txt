@@ -5,7 +5,7 @@
 # https://github.com/arduino/Arduino/wiki/Arduino-IDE-1.5-3rd-party-Hardware-specification
 
 name=Energia MSP432 (32-bits) Boards
-version=1.0.0
+version=1.0.15
 
 # MSP432 compile variables
 # ----------------------
