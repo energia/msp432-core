@@ -1,10 +1,10 @@
 /*
  * -------------------------------------------
- *    MSP432 DriverLib - v3_10_00_09 
+ *    MSP432 DriverLib - v3_21_00_05 
  * -------------------------------------------
  *
  * --COPYRIGHT--,BSD,BSD
- * Copyright (c) 2014, Texas Instruments Incorporated
+ * Copyright (c) 2016, Texas Instruments Incorporated
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -63,7 +63,7 @@ extern "C"
 #define EUSCI_B_I2C_NO_AUTO_STOP                           EUSCI_B_CTLW1_ASTP_0
 #define EUSCI_B_I2C_SET_BYTECOUNT_THRESHOLD_FLAG           EUSCI_B_CTLW1_ASTP_1
 #define EUSCI_B_I2C_SEND_STOP_AUTOMATICALLY_ON_BYTECOUNT_THRESHOLD  \
-	                                                       EUSCI_B_CTLW1_ASTP_2
+                                                           EUSCI_B_CTLW1_ASTP_2
 
 #define EUSCI_B_I2C_SET_DATA_RATE_1MBPS                                 1000000
 #define EUSCI_B_I2C_SET_DATA_RATE_400KBPS                                400000

@@ -79,6 +79,18 @@ typedef xdc_Void (*ti_sysbios_knl_Task_FuncPtr)(xdc_UArg, xdc_UArg);
 /* AllBlockedFuncPtr */
 typedef xdc_Void (*ti_sysbios_knl_Task_AllBlockedFuncPtr)(xdc_Void);
 
+/* ModStateCheckValueFuncPtr */
+typedef xdc_UInt32 (*ti_sysbios_knl_Task_ModStateCheckValueFuncPtr)(ti_sysbios_knl_Task_Module_State*);
+
+/* ModStateCheckFuncPtr */
+typedef xdc_Int (*ti_sysbios_knl_Task_ModStateCheckFuncPtr)(ti_sysbios_knl_Task_Module_State*, xdc_UInt32);
+
+/* ObjectCheckValueFuncPtr */
+typedef xdc_UInt32 (*ti_sysbios_knl_Task_ObjectCheckValueFuncPtr)(ti_sysbios_knl_Task_Handle);
+
+/* ObjectCheckFuncPtr */
+typedef xdc_Int (*ti_sysbios_knl_Task_ObjectCheckFuncPtr)(ti_sysbios_knl_Task_Handle, xdc_UInt32);
+
 /* Mode */
 enum ti_sysbios_knl_Task_Mode {
     ti_sysbios_knl_Task_Mode_RUNNING,
@@ -325,6 +337,16 @@ __extern __FAR__ const CT__ti_sysbios_knl_Task_E_spOutOfBounds ti_sysbios_knl_Ta
 typedef xdc_runtime_Error_Id CT__ti_sysbios_knl_Task_E_deleteNotAllowed;
 __extern __FAR__ const CT__ti_sysbios_knl_Task_E_deleteNotAllowed ti_sysbios_knl_Task_E_deleteNotAllowed__C;
 
+/* E_moduleStateCheckFailed */
+#define ti_sysbios_knl_Task_E_moduleStateCheckFailed (ti_sysbios_knl_Task_E_moduleStateCheckFailed__C)
+typedef xdc_runtime_Error_Id CT__ti_sysbios_knl_Task_E_moduleStateCheckFailed;
+__extern __FAR__ const CT__ti_sysbios_knl_Task_E_moduleStateCheckFailed ti_sysbios_knl_Task_E_moduleStateCheckFailed__C;
+
+/* E_objectCheckFailed */
+#define ti_sysbios_knl_Task_E_objectCheckFailed (ti_sysbios_knl_Task_E_objectCheckFailed__C)
+typedef xdc_runtime_Error_Id CT__ti_sysbios_knl_Task_E_objectCheckFailed;
+__extern __FAR__ const CT__ti_sysbios_knl_Task_E_objectCheckFailed ti_sysbios_knl_Task_E_objectCheckFailed__C;
+
 /* A_badThreadType */
 #define ti_sysbios_knl_Task_A_badThreadType (ti_sysbios_knl_Task_A_badThreadType__C)
 typedef xdc_runtime_Assert_Id CT__ti_sysbios_knl_Task_A_badThreadType;
@@ -432,6 +454,44 @@ typedef struct { int length; ti_sysbios_knl_Task_HookSet *elem; } __ARRAY1_ti_sy
 typedef __ARRAY1_ti_sysbios_knl_Task_hooks __TA_ti_sysbios_knl_Task_hooks;
 typedef __TA_ti_sysbios_knl_Task_hooks CT__ti_sysbios_knl_Task_hooks;
 __extern __FAR__ const CT__ti_sysbios_knl_Task_hooks ti_sysbios_knl_Task_hooks__C;
+
+/* moduleStateCheckFxn */
+#define ti_sysbios_knl_Task_moduleStateCheckFxn (ti_sysbios_knl_Task_moduleStateCheckFxn__C)
+typedef ti_sysbios_knl_Task_ModStateCheckFuncPtr CT__ti_sysbios_knl_Task_moduleStateCheckFxn;
+__extern __FAR__ const CT__ti_sysbios_knl_Task_moduleStateCheckFxn ti_sysbios_knl_Task_moduleStateCheckFxn__C;
+
+/* moduleStateCheckValueFxn */
+#define ti_sysbios_knl_Task_moduleStateCheckValueFxn (ti_sysbios_knl_Task_moduleStateCheckValueFxn__C)
+typedef ti_sysbios_knl_Task_ModStateCheckValueFuncPtr CT__ti_sysbios_knl_Task_moduleStateCheckValueFxn;
+__extern __FAR__ const CT__ti_sysbios_knl_Task_moduleStateCheckValueFxn ti_sysbios_knl_Task_moduleStateCheckValueFxn__C;
+
+/* moduleStateCheckFlag */
+#ifdef ti_sysbios_knl_Task_moduleStateCheckFlag__D
+#define ti_sysbios_knl_Task_moduleStateCheckFlag (ti_sysbios_knl_Task_moduleStateCheckFlag__D)
+#else
+#define ti_sysbios_knl_Task_moduleStateCheckFlag (ti_sysbios_knl_Task_moduleStateCheckFlag__C)
+typedef xdc_Bool CT__ti_sysbios_knl_Task_moduleStateCheckFlag;
+__extern __FAR__ const CT__ti_sysbios_knl_Task_moduleStateCheckFlag ti_sysbios_knl_Task_moduleStateCheckFlag__C;
+#endif
+
+/* objectCheckFxn */
+#define ti_sysbios_knl_Task_objectCheckFxn (ti_sysbios_knl_Task_objectCheckFxn__C)
+typedef ti_sysbios_knl_Task_ObjectCheckFuncPtr CT__ti_sysbios_knl_Task_objectCheckFxn;
+__extern __FAR__ const CT__ti_sysbios_knl_Task_objectCheckFxn ti_sysbios_knl_Task_objectCheckFxn__C;
+
+/* objectCheckValueFxn */
+#define ti_sysbios_knl_Task_objectCheckValueFxn (ti_sysbios_knl_Task_objectCheckValueFxn__C)
+typedef ti_sysbios_knl_Task_ObjectCheckValueFuncPtr CT__ti_sysbios_knl_Task_objectCheckValueFxn;
+__extern __FAR__ const CT__ti_sysbios_knl_Task_objectCheckValueFxn ti_sysbios_knl_Task_objectCheckValueFxn__C;
+
+/* objectCheckFlag */
+#ifdef ti_sysbios_knl_Task_objectCheckFlag__D
+#define ti_sysbios_knl_Task_objectCheckFlag (ti_sysbios_knl_Task_objectCheckFlag__D)
+#else
+#define ti_sysbios_knl_Task_objectCheckFlag (ti_sysbios_knl_Task_objectCheckFlag__C)
+typedef xdc_Bool CT__ti_sysbios_knl_Task_objectCheckFlag;
+__extern __FAR__ const CT__ti_sysbios_knl_Task_objectCheckFlag ti_sysbios_knl_Task_objectCheckFlag__C;
+#endif
 
 /* numConstructedTasks */
 #ifdef ti_sysbios_knl_Task_numConstructedTasks__D
@@ -770,6 +830,26 @@ __extern xdc_Void ti_sysbios_knl_Task_deleteTerminatedTasksFunc__I( void );
 xdc__CODESECT(ti_sysbios_knl_Task_processVitalTaskFlag__I, "ti_sysbios_knl_Task_processVitalTaskFlag")
 __extern xdc_Void ti_sysbios_knl_Task_processVitalTaskFlag__I( ti_sysbios_knl_Task_Object *task );
 
+/* moduleStateCheck__I */
+#define ti_sysbios_knl_Task_moduleStateCheck ti_sysbios_knl_Task_moduleStateCheck__I
+xdc__CODESECT(ti_sysbios_knl_Task_moduleStateCheck__I, "ti_sysbios_knl_Task_moduleStateCheck")
+__extern xdc_Int ti_sysbios_knl_Task_moduleStateCheck__I( ti_sysbios_knl_Task_Module_State *moduleState, xdc_UInt32 checkValue );
+
+/* getModuleStateCheckValue__I */
+#define ti_sysbios_knl_Task_getModuleStateCheckValue ti_sysbios_knl_Task_getModuleStateCheckValue__I
+xdc__CODESECT(ti_sysbios_knl_Task_getModuleStateCheckValue__I, "ti_sysbios_knl_Task_getModuleStateCheckValue")
+__extern xdc_UInt32 ti_sysbios_knl_Task_getModuleStateCheckValue__I( ti_sysbios_knl_Task_Module_State *moduleState );
+
+/* objectCheck__I */
+#define ti_sysbios_knl_Task_objectCheck ti_sysbios_knl_Task_objectCheck__I
+xdc__CODESECT(ti_sysbios_knl_Task_objectCheck__I, "ti_sysbios_knl_Task_objectCheck")
+__extern xdc_Int ti_sysbios_knl_Task_objectCheck__I( ti_sysbios_knl_Task_Handle handle, xdc_UInt32 checkValue );
+
+/* getObjectCheckValue__I */
+#define ti_sysbios_knl_Task_getObjectCheckValue ti_sysbios_knl_Task_getObjectCheckValue__I
+xdc__CODESECT(ti_sysbios_knl_Task_getObjectCheckValue__I, "ti_sysbios_knl_Task_getObjectCheckValue")
+__extern xdc_UInt32 ti_sysbios_knl_Task_getObjectCheckValue__I( ti_sysbios_knl_Task_Handle handle );
+
 
 /*
  * ======== SYSTEM FUNCTIONS ========
@@ -975,6 +1055,10 @@ static inline ti_sysbios_knl_Queue_Handle ti_sysbios_knl_Task_Module_State_termi
 #define Task_Struct ti_sysbios_knl_Task_Struct
 #define Task_FuncPtr ti_sysbios_knl_Task_FuncPtr
 #define Task_AllBlockedFuncPtr ti_sysbios_knl_Task_AllBlockedFuncPtr
+#define Task_ModStateCheckValueFuncPtr ti_sysbios_knl_Task_ModStateCheckValueFuncPtr
+#define Task_ModStateCheckFuncPtr ti_sysbios_knl_Task_ModStateCheckFuncPtr
+#define Task_ObjectCheckValueFuncPtr ti_sysbios_knl_Task_ObjectCheckValueFuncPtr
+#define Task_ObjectCheckFuncPtr ti_sysbios_knl_Task_ObjectCheckFuncPtr
 #define Task_Mode ti_sysbios_knl_Task_Mode
 #define Task_Stat ti_sysbios_knl_Task_Stat
 #define Task_HookSet ti_sysbios_knl_Task_HookSet
@@ -1002,6 +1086,8 @@ static inline ti_sysbios_knl_Queue_Handle ti_sysbios_knl_Task_Module_State_termi
 #define Task_E_stackOverflow ti_sysbios_knl_Task_E_stackOverflow
 #define Task_E_spOutOfBounds ti_sysbios_knl_Task_E_spOutOfBounds
 #define Task_E_deleteNotAllowed ti_sysbios_knl_Task_E_deleteNotAllowed
+#define Task_E_moduleStateCheckFailed ti_sysbios_knl_Task_E_moduleStateCheckFailed
+#define Task_E_objectCheckFailed ti_sysbios_knl_Task_E_objectCheckFailed
 #define Task_A_badThreadType ti_sysbios_knl_Task_A_badThreadType
 #define Task_A_badTaskState ti_sysbios_knl_Task_A_badTaskState
 #define Task_A_noPendElem ti_sysbios_knl_Task_A_noPendElem
@@ -1019,6 +1105,12 @@ static inline ti_sysbios_knl_Queue_Handle ti_sysbios_knl_Task_Module_State_termi
 #define Task_checkStackFlag ti_sysbios_knl_Task_checkStackFlag
 #define Task_deleteTerminatedTasks ti_sysbios_knl_Task_deleteTerminatedTasks
 #define Task_hooks ti_sysbios_knl_Task_hooks
+#define Task_moduleStateCheckFxn ti_sysbios_knl_Task_moduleStateCheckFxn
+#define Task_moduleStateCheckValueFxn ti_sysbios_knl_Task_moduleStateCheckValueFxn
+#define Task_moduleStateCheckFlag ti_sysbios_knl_Task_moduleStateCheckFlag
+#define Task_objectCheckFxn ti_sysbios_knl_Task_objectCheckFxn
+#define Task_objectCheckValueFxn ti_sysbios_knl_Task_objectCheckValueFxn
+#define Task_objectCheckFlag ti_sysbios_knl_Task_objectCheckFlag
 #define Task_numConstructedTasks ti_sysbios_knl_Task_numConstructedTasks
 #define Task_startupHookFunc ti_sysbios_knl_Task_startupHookFunc
 #define Task_Module_State_inactiveQ ti_sysbios_knl_Task_Module_State_inactiveQ

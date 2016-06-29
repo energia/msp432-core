@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2015, Texas Instruments Incorporated
+ * Copyright (c) 2015-2016, Texas Instruments Incorporated
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -53,7 +53,7 @@
  * ## General Behavior #
  * Before using the I2C in CC26XX:
  *   - The I2C driver is initialized by calling I2C_init().
- *   - The I2C HW is configured and flags system dependencies (e.g. IOs,
+ *   - The I2C HW is configured and system dependencies are declared (e.g. IOs,
  *     power, etc.) by calling I2C_open().
  *   .
  * The following is true for receive operation:
@@ -79,17 +79,17 @@
  *   .
  *
  * ## Power Management #
- *  The I2CCC26XX driver is setting a power constraint during operation to keep
- *  the device out of standby, i.e. device will enter idle mode when no tasks
- *  are active. When the operation has finished, the power
- *  constraint is released.
+ *  The I2CCC26XX driver sets a power constraint during transactions to keep
+ *  the device out of standby; so when all tasks are blocked, the device will
+ *  enter idle mode instead of standby.  When the transactions have finished,
+ *  the power constraint to prohibit standby is released.
  *  The following statements are valid:
- *    - After I2C_open() call: I2C is enabled, there is no active I2C
+ *    - After I2C_open() call: I2C is enabled, there are no active I2C
  *      transactions, the device can enter standby.
- *    - After I2C_transfer() call: active I2C transactions exist , the device
- *      might enter idle, not standby (set constraint).
- *    - If I2C_transfer() returns successfully or with error: I2C remains enabled,
- *      but device can enter standby.
+ *    - After I2C_transfer() call: active I2C transactions exist, the device
+ *      might enter idle, but not standby.
+ *    - When I2C_transfer() returns, either after success or error, I2C remains
+ *      enabled, and the device can enter standby.
  *    - After I2C_close() call: I2C is disabled
  *
  * ## Supported Functions ##
@@ -394,10 +394,7 @@ typedef enum I2CCC26XX_Mode {
  *  handler creation code, so you need to refer to the OS documentation
  *  for usage.  For example, for SYS/BIOS applications, refer to the
  *  ti.sysbios.family.arm.m3.Hwi documentation for SYS/BIOS usage of
- *  interrupt priorities.  If the driver uses the ti.drivers.ports interface
- *  instead of making OS calls directly, then the HwiP port handles the
- *  interrupt priority in an OS specific way.  In the case of the SYS/BIOS
- *  port, intPriority is passed unmodified to Hwi_create().
+ *  interrupt priorities.
  *
  *  A sample structure is shown below:
  *  @code
@@ -463,7 +460,7 @@ typedef struct I2CCC26XX_Object {
     ti_sysbios_family_arm_m3_Hwi_Struct hwi;/*!< Hwi object handle */
     Swi_Struct          swi;                /*!< Swi object */
     Semaphore_Struct    mutex;              /*!< Grants exclusive access to I2C */
-    Semaphore_Struct    transferComplete;   /*!< Notify finished I2C transfer */
+    Semaphore_Struct    transferComplete;   /*!< Signal I2C transfer complete */
 
     /* PIN driver state object and handle */
     PIN_State           pinState;

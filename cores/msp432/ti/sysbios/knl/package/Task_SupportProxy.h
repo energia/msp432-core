@@ -173,6 +173,7 @@ struct ti_sysbios_knl_Task_SupportProxy_Fxns__ {
     xdc_SizeT (*stackUsed)(xdc_Char*, xdc_SizeT);
     xdc_UInt (*getStackAlignment)(void);
     xdc_SizeT (*getDefaultStackSize)(void);
+    xdc_Ptr (*getCheckValueAddr)(xdc_Ptr);
     xdc_runtime_Types_SysFxns2 __sfxns;
 };
 
@@ -261,6 +262,11 @@ __extern xdc_UInt ti_sysbios_knl_Task_SupportProxy_getStackAlignment__E( void );
 xdc__CODESECT(ti_sysbios_knl_Task_SupportProxy_getDefaultStackSize__E, "ti_sysbios_knl_Task_SupportProxy_getDefaultStackSize")
 __extern xdc_SizeT ti_sysbios_knl_Task_SupportProxy_getDefaultStackSize__E( void );
 
+/* getCheckValueAddr__E */
+#define ti_sysbios_knl_Task_SupportProxy_getCheckValueAddr ti_sysbios_knl_Task_SupportProxy_getCheckValueAddr__E
+xdc__CODESECT(ti_sysbios_knl_Task_SupportProxy_getCheckValueAddr__E, "ti_sysbios_knl_Task_SupportProxy_getCheckValueAddr")
+__extern xdc_Ptr ti_sysbios_knl_Task_SupportProxy_getCheckValueAddr__E( xdc_Ptr curTask );
+
 
 /*
  * ======== CONVERTORS ========
@@ -332,6 +338,7 @@ static inline CT__ti_sysbios_knl_Task_SupportProxy_Module__id ti_sysbios_knl_Tas
 #define Task_SupportProxy_stackUsed ti_sysbios_knl_Task_SupportProxy_stackUsed
 #define Task_SupportProxy_getStackAlignment ti_sysbios_knl_Task_SupportProxy_getStackAlignment
 #define Task_SupportProxy_getDefaultStackSize ti_sysbios_knl_Task_SupportProxy_getDefaultStackSize
+#define Task_SupportProxy_getCheckValueAddr ti_sysbios_knl_Task_SupportProxy_getCheckValueAddr
 #define Task_SupportProxy_Module_name ti_sysbios_knl_Task_SupportProxy_Module_name
 #define Task_SupportProxy_Module_id ti_sysbios_knl_Task_SupportProxy_Module_id
 #define Task_SupportProxy_Module_startup ti_sysbios_knl_Task_SupportProxy_Module_startup

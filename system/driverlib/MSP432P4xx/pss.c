@@ -1,10 +1,10 @@
 /*
  * -------------------------------------------
- *    MSP432 DriverLib - v3_10_00_09 
+ *    MSP432 DriverLib - v3_21_00_05 
  * -------------------------------------------
  *
  * --COPYRIGHT--,BSD,BSD
- * Copyright (c) 2014, Texas Instruments Incorporated
+ * Copyright (c) 2016, Texas Instruments Incorporated
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -168,7 +168,7 @@ void PSS_setHighSideVoltageTrigger(uint_fast8_t triggerVoltage)
 uint_fast8_t PSS_getHighSideVoltageTrigger(void)
 {
     return (uint_fast8_t)((PSS->CTL0 & PSS_CTL0_SVSMHTH_MASK)
-    		>> PSS_CTL0_SVSMHTH_OFS);
+            >> PSS_CTL0_SVSMHTH_OFS);
 }
 
 void PSS_enableInterrupt(void)

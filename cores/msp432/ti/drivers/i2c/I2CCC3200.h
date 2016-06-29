@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2015, Texas Instruments Incorporated
+ * Copyright (c) 2015-2016, Texas Instruments Incorporated
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -40,7 +40,7 @@
  *  #include <ti/drivers/i2c/I2CCC3200.h>
  *  @endcode
  *
- *  Refer to @ref I2C.h for a complete description of APIs & example of use.
+ *  Refer to @ref I2C.h for a complete description of APIs and usage.
  *
  *  ============================================================================
  */
@@ -114,14 +114,9 @@ typedef enum I2CCC3200_Mode {
  *      - inc/hw_ints.h
  *
  *  intPriority is the I2C peripheral's interrupt priority, as defined by the
- *  underlying OS.  It is passed unmodified to the underlying OS's interrupt
- *  handler creation code, so you need to refer to the OS documentation
- *  for usage.  For example, for SYS/BIOS applications, refer to the
- *  ti.sysbios.family.arm.m3.Hwi documentation for SYS/BIOS usage of
- *  interrupt priorities.  If the driver uses the ti.drivers.ports interface
- *  instead of making OS calls directly, then the HwiP port handles the
- *  interrupt priority in an OS specific way.  In the case of the SYS/BIOS
- *  port, intPriority is passed unmodified to Hwi_create().
+ *  underlying OS. The driver uses the HwiP port interface, which handles the
+ *  interrupt priority in the OS appropriate way.  In the case of the SYS/BIOS
+ *  implementation, intPriority is passed unmodified to Hwi_create().
  *
  *  A sample structure is shown below:
  *  @code
@@ -150,16 +145,16 @@ typedef struct I2CCC3200_HWAttrs {
  */
 typedef struct I2CCC3200_Object {
     SemaphoreP_Handle   mutex;            /* Grants exclusive access to I2C */
-    SemaphoreP_Handle   transferComplete; /* Notify finished I2C transfer */
+    SemaphoreP_Handle   transferComplete; /* Signals I2C transfer completion */
 
     HwiP_Handle         hwiHandle;
 
     I2C_TransferMode    transferMode;        /* Blocking or Callback mode */
     I2C_CallbackFxn     transferCallbackFxn; /* Callback function pointer */
 
-    volatile I2CCC3200_Mode mode;         /* Stores the I2C state */
+    volatile I2CCC3200_Mode mode;            /* Stores the I2C state */
 
-    I2C_Transaction    *currentTransaction; /* Pointer to current I2C transaction */
+    I2C_Transaction    *currentTransaction; /* Pointer to current transaction */
 
     uint8_t            *writeBufIdx;    /* Internal inc. writeBuf index */
     size_t              writeCountIdx;  /* Internal dec. writeCounter */
@@ -171,11 +166,10 @@ typedef struct I2CCC3200_Object {
     I2C_Transaction    *headPtr;        /* Head ptr for queued transactions */
     I2C_Transaction    *tailPtr;        /* Tail ptr for queued transactions */
 
-    bool                isOpen;         /* flag to indicate module is open */
+    bool                isOpen;         /* Flag to indicate module is open */
 
-    /* For wakeup from LPDS */
-    Power_NotifyObj     notifyObj;
-    I2C_BitRate         bitRate;         /* I2C bus bit rate */
+    Power_NotifyObj     notifyObj;      /* For notification of wake from LPDS */
+    I2C_BitRate         bitRate;        /* I2C bus bit rate */
 } I2CCC3200_Object;
 
 #ifdef __cplusplus

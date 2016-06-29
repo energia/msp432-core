@@ -1,10 +1,10 @@
 /*
  * -------------------------------------------
- *    MSP432 DriverLib - v3_10_00_09 
+ *    MSP432 DriverLib - v3_21_00_05 
  * -------------------------------------------
  *
  * --COPYRIGHT--,BSD,BSD
- * Copyright (c) 2014, Texas Instruments Incorporated
+ * Copyright (c) 2016, Texas Instruments Incorporated
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -43,7 +43,7 @@
 #include <interrupt.h>
 #include <hw_memmap.h>
 
-/* DriverLib internal GPIO register offset for optimized performace */
+/* DriverLib internal GPIO register offset for optimized performance */
 #define OFS_LIB_PAIN  ((uint32_t)&P1->IN - (uint32_t)P1)
 #define OFS_LIB_PAOUT   ((uint32_t)&P1->OUT - (uint32_t)P1)
 #define OFS_LIB_PADIR   ((uint32_t)&P1->DIR - (uint32_t)P1)
@@ -55,7 +55,7 @@
 #define OFS_LIB_PAIES   ((uint32_t)&P1->IES - (uint32_t)P1)
 #define OFS_LIB_PAIFG   ((uint32_t)&P1->IFG - (uint32_t)P1)
 #define OFS_LIB_P1IE    ((uint32_t)&P1->IE - (uint32_t)P1)
-#define OFS_LIB_P2IE    ((uint32_t)&P2->IE - (uint32_t)P2)
+#define OFS_LIB_P2IE    OFS_LIB_P1IE
 
 static const uint32_t GPIO_PORT_TO_INT[] =
 { 0x00,
@@ -68,17 +68,17 @@ INT_PORT6 };
 
 static uint32_t GPIO_PORT_TO_BASE[] =
 {   0x00,
-	(uint32_t)P1,
-	(uint32_t)P1+1,
-	(uint32_t)P3,
-	(uint32_t)P3+1,
-	(uint32_t)P5,
-	(uint32_t)P5+1,
-	(uint32_t)P7,
-	(uint32_t)P7+1,
-	(uint32_t)P9,
-	(uint32_t)P9+1,
-	(uint32_t)PJ
+    (uint32_t)P1,
+    (uint32_t)P1+1,
+    (uint32_t)P3,
+    (uint32_t)P3+1,
+    (uint32_t)P5,
+    (uint32_t)P5+1,
+    (uint32_t)P7,
+    (uint32_t)P7+1,
+    (uint32_t)P9,
+    (uint32_t)P9+1,
+    (uint32_t)PJ
     };
 
 void GPIO_setAsOutputPin(uint_fast8_t selectedPort, uint_fast16_t selectedPins)

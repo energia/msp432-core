@@ -153,6 +153,15 @@ typedef xdc_UInt CT__ti_sysbios_hal_CoreNull_numCores;
 __extern __FAR__ const CT__ti_sysbios_hal_CoreNull_numCores ti_sysbios_hal_CoreNull_numCores__C;
 #endif
 
+/* id */
+#ifdef ti_sysbios_hal_CoreNull_id__D
+#define ti_sysbios_hal_CoreNull_id (ti_sysbios_hal_CoreNull_id__D)
+#else
+#define ti_sysbios_hal_CoreNull_id (ti_sysbios_hal_CoreNull_id__C)
+typedef xdc_UInt CT__ti_sysbios_hal_CoreNull_id;
+__extern __FAR__ const CT__ti_sysbios_hal_CoreNull_id ti_sysbios_hal_CoreNull_id__C;
+#endif
+
 
 /*
  * ======== VIRTUAL FUNCTIONS ========
@@ -311,6 +320,7 @@ static inline xdc_Void ti_sysbios_hal_CoreNull_Module_setMask( xdc_Bits16 mask )
 
 /* module prefix */
 #define CoreNull_numCores ti_sysbios_hal_CoreNull_numCores
+#define CoreNull_id ti_sysbios_hal_CoreNull_id
 #define CoreNull_getId ti_sysbios_hal_CoreNull_getId
 #define CoreNull_interruptCore ti_sysbios_hal_CoreNull_interruptCore
 #define CoreNull_lock ti_sysbios_hal_CoreNull_lock

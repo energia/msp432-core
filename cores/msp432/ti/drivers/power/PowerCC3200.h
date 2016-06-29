@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2015, Texas Instruments Incorporated
+ * Copyright (c) 2015-2016, Texas Instruments Incorporated
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -82,6 +82,7 @@
 /* driverlib header files */
 #include <inc/hw_types.h>
 #include <driverlib/pin.h>
+#include <driverlib/rom.h>
 #include <driverlib/rom_map.h>
 
 #ifdef __cplusplus
@@ -147,13 +148,27 @@ extern "C" {
 #define PowerCC3200_numNVICSetEnableRegs    6
 #define PowerCC3200_numNVICIntPriority      49
 
+/* Number of pins that can be parked in LPDS */
+#define PowerCC3200_NUMPINS             34
+
+/*! @brief  Used to specify parking of a pin during LPDS */
+typedef struct PowerCC3200_ParkInfo {
+    uint32_t pin;
+    uint32_t parkState;
+} PowerCC3200_ParkInfo;
+
 /*! @brief Power global configuration */
-typedef struct PowerCC3200_Config {
+typedef struct PowerCC3200_ConfigV1 {
     /*! Init function for power policy */
     Power_PolicyInitFxn policyInitFxn;
     /*! The power policy function */
     Power_PolicyFxn policyFxn;
-    /*! Hook function called when entering LPDS mode */
+    /*!
+     *  @brief  Hook function called before entering LPDS
+     *
+     *  This function is called after any notifications are complete,
+     *  and before any pins are parked, just before entry to LPDS.
+     */
     void (*enterLPDSHookFxn)(void);
     /*!
      *  @brief  Hook function called when resuming from LPDS
@@ -192,6 +207,31 @@ typedef struct PowerCC3200_Config {
      */
     uint32_t wakeupGPIOTypeLPDS;
     /*!
+     *  @brief  Function to be called when the configured GPIO triggers wakeup
+     *  from LPDS
+     *
+     *  During LPDS the internal GPIO module is powered off, and special
+     *  periphery logic is used instead to detect the trigger and wake the
+     *  device.  No GPIO interrupt service routine will be triggered in this
+     *  case (even if an ISR is configured, and used normally to detect GPIO
+     *  interrupts when not in LPDS).  This function can be used in lieu of a
+     *  GPIO ISR, to take specific action upon LPDS wakeup.
+     *
+     *  A value of NULL indicates no GPIO wakeup function will be called.
+     *
+     *  An argument for this wakeup function can be specified via
+     *  wakeupGPIOFxnLPDSArg.
+     *
+     *  Note that this wakeup function will be called as one of the last steps
+     *  in Power_sleep(), after all notifications have been sent out, and after
+     *  pins have been restored to their previous (non-parked) states.
+     */
+    void (*wakeupGPIOFxnLPDS)(unsigned int argument);
+    /*!
+     *  @brief  The argument to be passed to wakeupGPIOFxnLPDS()
+     */
+    unsigned int wakeupGPIOFxnLPDSArg;
+    /*!
      *  @brief  The GPIO sources for wakeup from shutdown
      *
      *  Any one of the following GPIOs {2,4,11,13,17,24,26} can
@@ -220,7 +260,35 @@ typedef struct PowerCC3200_Config {
      *  PRCM_SRAM_COL_4
      */
     uint32_t ramRetentionMaskLPDS;
-} PowerCC3200_Config;
+    /*!
+     *  @brief  Keep debug interface active during LPDS
+     *
+     *  This Boolean controls whether the debug interface will be left active
+     *  when LPDS is entered.  For best power savings this flag should be set
+     *  to false.  Setting the flag to true will enable better debug
+     *  capability, but will prevent full LPDS, and will result in increased
+     *  power consumption.
+     */
+    bool keepDebugActiveDuringLPDS;
+    /*!
+     *  @brief  IO retention mask for Shutdown
+     *
+     *  Value can be a mask of the following (defined in driverlib/prcm.h):
+     *  PRCM_IO_RET_GRP_0, PRCM_IO_RET_GRP_1, PRCM_IO_RET_GRP_2
+     *  PRCM_IO_RET_GRP_3
+     */
+    uint32_t ioRetentionShutdown;
+    /*!
+     *  @brief  Pointer to an array of pins to be parked during LPDS
+     *
+     *  A value of NULL will disable parking of any pins during LPDS
+     */
+    PowerCC3200_ParkInfo * pinParkDefs;
+    /*!
+     *  @brief  Number of pins to be parked during LPDS
+     */
+    uint32_t numPins;
+} PowerCC3200_ConfigV1;
 
 /*! @brief Internal module state */
 typedef struct PowerCC3200_ModuleState {
@@ -232,6 +300,15 @@ typedef struct PowerCC3200_ModuleState {
     bool initialized;
     uint8_t refCount[PowerCC3200_NUMRESOURCES];
     uint8_t constraintCounts[PowerCC3200_NUMCONSTRAINTS];
+    Power_PolicyFxn policyFxn;
+    uint32_t pinType[PowerCC3200_NUMPINS];
+    uint16_t pinDir[PowerCC3200_NUMPINS];
+    uint8_t pinMode[PowerCC3200_NUMPINS];
+    uint16_t stateAntPin29;
+    uint16_t stateAntPin30;
+    uint32_t pinLockMask;
+    void (*wakeupGPIOFxnLPDS)(unsigned int);
+    unsigned int wakeupGPIOFxnLPDSArg;
 } PowerCC3200_ModuleState;
 
 /*! @brief  NVIC registers that need to be save on entering LPDS */
@@ -270,13 +347,16 @@ typedef struct PowerCC3200_SaveRegisters {
     PowerCC3200_NVICRegisters nvicRegs;
 } PowerCC3200_SaveRegisters;
 
-/*! @brief enumeration of states for parked pins */
+/*! @brief enumeration of state for parked pins */
 typedef enum {
     PowerCC3200_NO_PULL_HIZ = PIN_TYPE_STD,
     PowerCC3200_WEAK_PULL_UP_STD = PIN_TYPE_STD_PU,
     PowerCC3200_WEAK_PULL_DOWN_STD = PIN_TYPE_STD_PD,
     PowerCC3200_WEAK_PULL_UP_OPENDRAIN = PIN_TYPE_OD_PU,
-    PowerCC3200_WEAK_PULL_DOWN_OPENDRAIN = PIN_TYPE_OD_PD
+    PowerCC3200_WEAK_PULL_DOWN_OPENDRAIN = PIN_TYPE_OD_PD,
+    PowerCC3200_DRIVE_LOW,
+    PowerCC3200_DRIVE_HIGH,
+    PowerCC3200_DONT_PARK
 } PowerCC3200_ParkState;
 
 /*! @brief enumeration of pins that can be parked */
@@ -300,6 +380,8 @@ typedef enum {
     PowerCC3200_PIN19 = PIN_19,
     PowerCC3200_PIN20 = PIN_20,
     PowerCC3200_PIN21 = PIN_21,
+    PowerCC3200_PIN29 = 0x1C,
+    PowerCC3200_PIN30 = 0x1D,
     PowerCC3200_PIN45 = PIN_45,
     PowerCC3200_PIN50 = PIN_50,
     PowerCC3200_PIN52 = PIN_52,
@@ -322,6 +404,8 @@ typedef struct PowerCC3200_Wakeup {
     bool enableNetworkWakeupLPDS;
     uint32_t wakeupGPIOSourceLPDS;
     uint32_t wakeupGPIOTypeLPDS;
+    void (*wakeupGPIOFxnLPDS)();
+    unsigned int wakeupGPIOFxnLPDSArg;
     uint32_t wakeupGPIOSourceShutdown;
     uint32_t wakeupGPIOTypeShutdown;
 } PowerCC3200_Wakeup;
@@ -342,8 +426,26 @@ void PowerCC3200_configureWakeup(PowerCC3200_Wakeup *wakeup);
 /*! OS specific default power policy init function */
 void PowerCC3200_initPolicy(void);
 
-/*! CC3200 specific pin parking function */
-void PowerCC3200_parkPin(PowerCC3200_Pin pin, PowerCC3200_ParkState parkState);
+/*! CC3200-specific function to dynamically set the LPDS park state for a pin */
+void PowerCC3200_setParkState(PowerCC3200_Pin pin, uint32_t level);
+
+/*!
+ *  @brief  Function to disable IO retention and unlock pin groups following
+ *  exit from Shutdown.
+ *
+ *  PowerCC3200_ConfigV1.ioRetentionShutdown can be used to specify locking and
+ *  retention of pin groups during Shutdown.  Upon exit from Shutdown, and
+ *  when appropriate, an application can call this function, to
+ *  correspondingly disable IO retention, and unlock the specified pin groups.
+ *
+ *  @param  groupFlags     A logical OR of one or more of the following
+ *  flags (defined in driverlib/prcm.h):
+ *      PRCM_IO_RET_GRP_0 - all pins except sFlash and JTAG interface
+ *      PRCM_IO_RET_GRP_1 - sFlash interface pins 11,12,13,14
+ *      PRCM_IO_RET_GRP_2 - JTAG TDI and TDO interface pins 16,17
+ *      PRCM_IO_RET_GRP_3 - JTAG TCK and TMS interface pins 19,20
+ */
+void PowerCC3200_disableIORetention(unsigned long groupFlags);
 
 /*! OS specific default power policy function */
 void PowerCC3200_sleepPolicy(void);

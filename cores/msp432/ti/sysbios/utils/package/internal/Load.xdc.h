@@ -37,6 +37,10 @@
 #undef ti_sysbios_utils_Load_updateLoads
 #define ti_sysbios_utils_Load_updateLoads ti_sysbios_utils_Load_updateLoads__E
 
+/* updateContextsAndPost */
+#undef ti_sysbios_utils_Load_updateContextsAndPost
+#define ti_sysbios_utils_Load_updateContextsAndPost ti_sysbios_utils_Load_updateContextsAndPost__E
+
 /* updateCurrentThreadTime */
 #undef ti_sysbios_utils_Load_updateCurrentThreadTime
 #define ti_sysbios_utils_Load_updateCurrentThreadTime ti_sysbios_utils_Load_updateCurrentThreadTime__E

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2015, Texas Instruments Incorporated
+ * Copyright (c) 2015-2016, Texas Instruments Incorporated
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -137,6 +137,9 @@ extern void _restore_interrupts(unsigned int key);
 
 #else /* defined(__ti__) */
 
+#if defined(__IAR_SYSTEMS_ICC__)
+#include <intrinsics.h>
+
 /*
  *  ======== Hwi_disable ========
  */
@@ -144,11 +147,42 @@ static inline UInt ti_sysbios_hal_Hwi_disable()
 {
     UInt key;
 
-#if defined(__IAR_SYSTEMS_ICC__)
-    asm volatile (
-#else /* !__IAR_SYSTEMS_ICC__ */
+	key = __get_BASEPRI();
+     __set_BASEPRI(ti_sysbios_family_arm_m3_Hwi_disablePriority);
+
+    return key;
+}
+
+/*
+ *  ======== Hwi_enable ========
+ */
+static inline UInt ti_sysbios_hal_Hwi_enable()
+{
+    UInt key;
+	key = __get_BASEPRI();
+     __set_BASEPRI(0);
+
+    return key;
+}
+
+/*
+ *  ======== Hwi_restore ========
+ */
+static inline Void ti_sysbios_hal_Hwi_restore(UInt key)
+{
+     __set_BASEPRI(key);
+}
+
+#else  /* GNU */
+
+/*
+ *  ======== Hwi_disable ========
+ */
+static inline UInt ti_sysbios_hal_Hwi_disable()
+{
+    UInt key;
+
     __asm__ __volatile__ (
-#endif
             "mrs %0, basepri\n\t"
             "msr basepri, %1"
             : "=&r" (key)
@@ -164,11 +198,7 @@ static inline UInt ti_sysbios_hal_Hwi_enable()
 {
     UInt key;
 
-#if defined(__IAR_SYSTEMS_ICC__)
-    asm volatile (
-#else /* !__IAR_SYSTEMS_ICC__ */
     __asm__ __volatile__ (
-#endif
             "movw r12, #0\n\t"
             "mrs %0, basepri\n\t"
             "msr basepri, r12"
@@ -183,15 +213,13 @@ static inline UInt ti_sysbios_hal_Hwi_enable()
  */
 static inline Void ti_sysbios_hal_Hwi_restore(UInt key)
 {
-#if defined(__IAR_SYSTEMS_ICC__)
-    asm volatile (
-#else /* !__IAR_SYSTEMS_ICC__ */
     __asm__ __volatile__ (
-#endif
             "msr basepri, %0"
             :: "r" (key)
             );
 }
+
+#endif
 
 #endif /* defined(__ti__) */
 

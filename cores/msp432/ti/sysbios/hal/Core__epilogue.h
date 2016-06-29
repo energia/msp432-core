@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2015, Texas Instruments Incorporated
+ * Copyright (c) 2015-2106, Texas Instruments Incorporated
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -97,6 +97,9 @@ extern "C" {
 
 #else /* !__ti__ */
 
+#if defined(__IAR_SYSTEMS_ICC__)
+#include <intrinsics.h>
+
 /*
  *  ======== Core_hwiDisable ========
  */
@@ -104,11 +107,42 @@ static inline UInt ti_sysbios_hal_Core_hwiDisable()
 {
     UInt key;
 
-#if defined(__IAR_SYSTEMS_ICC__)
-    asm volatile (
-#else /* !__IAR_SYSTEMS_ICC__ */
+	key = __get_BASEPRI();
+     __set_BASEPRI(ti_sysbios_family_arm_m3_Hwi_disablePriority);
+
+    return key;
+}
+
+/*
+ *  ======== Core_hwiEnable ========
+ */
+static inline UInt ti_sysbios_hal_Core_hwiEnable()
+{
+    UInt key;
+	key = __get_BASEPRI();
+     __set_BASEPRI(0);
+
+    return key;
+}
+
+/*
+ *  ======== Core_hwiRestore ========
+ */
+static inline Void ti_sysbios_hal_Core_hwiRestore(UInt key)
+{
+     __set_BASEPRI(key);
+}
+
+#else /* GNU */
+
+/*
+ *  ======== Core_hwiDisable ========
+ */
+static inline UInt ti_sysbios_hal_Core_hwiDisable()
+{
+    UInt key;
+
     __asm__ __volatile__ (
-#endif
             "mrs %0, basepri\n\t"
             "msr basepri, %1"
             : "=&r" (key)
@@ -124,11 +158,7 @@ static inline UInt ti_sysbios_hal_Core_hwiEnable()
 {
     UInt key;
 
-#if defined(__IAR_SYSTEMS_ICC__)
-    asm volatile (
-#else /* !__IAR_SYSTEMS_ICC__ */
     __asm__ __volatile__ (
-#endif
             "movw r12, #0\n\t"
             "mrs %0, basepri\n\t"
             "msr basepri, r12"
@@ -138,21 +168,18 @@ static inline UInt ti_sysbios_hal_Core_hwiEnable()
     return key;
 }
 
-
 /*
  *  ======== Core_hwiRestore ========
  */
 static inline Void ti_sysbios_hal_Core_hwiRestore(UInt key)
 {
-#if defined(__IAR_SYSTEMS_ICC__)
-    asm volatile (
-#else /* !__IAR_SYSTEMS_ICC__ */
     __asm__ __volatile__ (
-#endif
             "msr basepri, %0"
             :: "r" (key)
             );
 }
+
+#endif
 
 #endif /* __ti__ */
 

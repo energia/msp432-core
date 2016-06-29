@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2015, Texas Instruments Incorporated
+ * Copyright (c) 2015-2016, Texas Instruments Incorporated
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -243,6 +243,8 @@ typedef struct GPIOCC3200_Config {
 #define GPIOCC3200_GPIO_29    0x0320
 #define GPIOCC3200_GPIO_30    0x0340
 #define GPIOCC3200_GPIO_31    0x0380
+
+#define GPIOCC3200_USE_STATIC 0x8000 /* use statically-defined parking state */
 
 #ifdef __cplusplus
 }

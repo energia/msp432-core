@@ -38,6 +38,7 @@
 #include <ti/drivers/PWM.h>
 #include <ti/drivers/GPIO.h>
 #include <ti/drivers/gpio/GPIOMSP432.h>
+#include <ti/drivers/pwm/PWMTimerMSP432.h>
 
 #include <ti/sysbios/family/arm/m3/Hwi.h>
 #include <ti/sysbios/family/arm/msp432/Timer.h>
@@ -58,6 +59,8 @@
  */
 
 extern PWM_Config PWM_config[];
+extern PWMTimerMSP432_HWAttrsV1 pwmTimerMSP432HWAttrs[];
+
 extern const GPIOMSP432_Config GPIOMSP432_config;
 
 /* Carefully selected hal Timer IDs for tone and servo */
@@ -215,8 +218,13 @@ void analogWrite(uint8_t pin, int val)
         PWM_Params_init(&pwmParams);
 
         /* Open the PWM port */
-        pwmParams.period = 2040; /* arduino period is 2.04ms (490Hz) */
-        pwmParams.dutyMode = PWM_DUTY_COUNTS;
+        pwmParams.periodUnits = PWM_PERIOD_US;
+        pwmParams.periodValue = 2040; /* arduino period is 2.04ms (490Hz) */
+        pwmParams.dutyUnits = PWM_DUTY_COUNTS;
+
+        /* override default pin definition in HwAttrs */
+        pwmTimerMSP432HWAttrs[pwmIndex].gpioPort = port;
+        pwmTimerMSP432HWAttrs[pwmIndex].gpioPinIndex = pinMask;
 
         /* PWM_open() will fail if the timer's CCR is already in use */
         pwmHandle = PWM_open(pwmIndex, &pwmParams);
@@ -235,6 +243,9 @@ void analogWrite(uint8_t pin, int val)
             Hwi_restore(hwiKey);
             return;
         }
+
+        /* start the timer */
+        PWM_start(pwmHandle);
 
         /* Enable PWM output on GPIO pins */
         MAP_GPIO_setAsPeripheralModuleFunctionOutputPin(port, pinMask,

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2015, Texas Instruments Incorporated
+ * Copyright (c) 2015-2016, Texas Instruments Incorporated
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -287,7 +287,13 @@ typedef Watchdog_Handle (*Watchdog_OpenFxn)  (Watchdog_Handle handle,
  *  @brief      A function pointer to a driver specific implementation of
  *              Watchdog_setReload().
  */
-typedef void (*Watchdog_SetReloadFxn)   (Watchdog_Handle handle, uint32_t value);
+typedef void (*Watchdog_SetReloadFxn)   (Watchdog_Handle handle, uint32_t ticks);
+
+/*!
+ *  @brief      A function pointer to a driver specific implementation of
+ *              Watchdog_ConvertMsToTicksFxn().
+ */
+typedef uint32_t (*Watchdog_ConvertMsToTicksFxn)   (uint32_t milliseconds);
 
 /*!
  *  @brief      The definition of a Watchdog function table that contains the
@@ -295,12 +301,13 @@ typedef void (*Watchdog_SetReloadFxn)   (Watchdog_Handle handle, uint32_t value)
  *              implementation.
  */
 typedef struct Watchdog_FxnTable {
-    Watchdog_ClearFxn          watchdogClear;
-    Watchdog_CloseFxn          watchdogClose;
-    Watchdog_ControlFxn        watchdogControl;
-    Watchdog_InitFxn           watchdogInit;
-    Watchdog_OpenFxn           watchdogOpen;
-    Watchdog_SetReloadFxn      watchdogSetReload;
+    Watchdog_ClearFxn             watchdogClear;
+    Watchdog_CloseFxn             watchdogClose;
+    Watchdog_ControlFxn           watchdogControl;
+    Watchdog_InitFxn              watchdogInit;
+    Watchdog_OpenFxn              watchdogOpen;
+    Watchdog_SetReloadFxn         watchdogSetReload;
+    Watchdog_ConvertMsToTicksFxn  watchdogConvertMsToTicks;
 } Watchdog_FxnTable;
 
 /*!
@@ -442,15 +449,41 @@ extern void Watchdog_Params_init(Watchdog_Params *params);
  *  zero. This is how the reload value can be changed after the Watchdog has
  *  already been opened. The new reload value will be loaded into the Watchdog
  *  timer when this function is called. Watchdog_setReload is not reentrant.
+ *  For CC13XX/CC26XX, if the parameter 'ticks' is set to zero (0), a Watchdog
+ *  interrupt is immediately generated.
  *
  *  This API is not applicable for all platforms. See the page for your
  *  specific driver implementation for details.
  *
  *  @param      handle      Watchdog Handle
  *
- *  @param      value       Value to be loaded into Watchdog timer
+ *  @param      ticks       Value to be loaded into Watchdog timer
+ *                          Unit is in Watchdog clock ticks
  */
-extern void Watchdog_setReload(Watchdog_Handle handle, uint32_t value);
+extern void Watchdog_setReload(Watchdog_Handle handle, uint32_t ticks);
+
+/*!
+ *  @brief      Converts milliseconds to Watchdog clock ticks
+ *
+ *  Converts the input value into number of Watchdog clock ticks as close as
+ *  possible.  If the converted value exceeds 32 bits, a zero (0) will be
+ *  returned to indicate overflow.  The converted value can be used as the
+ *  function parameter 'ticks' in Watchdog_setReload().
+ *
+ *  This API is not applicable for all platforms. See the page for your
+ *  specific driver implementation for details.
+ *
+ *  @param      handle         Watchdog Handle
+ *
+ *  @param      milliseconds   Value to be converted
+ *
+ *  @return Converted value in number of Watchdog clock ticks
+ *          A value of zero (0) means the converted value exceeds 32 bits
+ *          or that the operation is not supported for the specific device.
+     *
+ *  @sa     Watchdog_setReload()
+ */
+extern uint32_t Watchdog_convertMsToTicks(Watchdog_Handle handle, uint32_t milliseconds);
 
 #ifdef __cplusplus
 }

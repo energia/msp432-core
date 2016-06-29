@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2015, Texas Instruments Incorporated
+ * Copyright (c) 2015-2016, Texas Instruments Incorporated
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -114,14 +114,8 @@ typedef enum I2CTiva_Mode {
  *      - inc/hw_ints.h
  *
  *  intPriority is the I2C peripheral's interrupt priority, as defined by the
- *  underlying OS.  It is passed unmodified to the underlying OS's interrupt
- *  handler creation code, so you need to refer to the OS documentation
- *  for usage.  For example, for SYS/BIOS applications, refer to the
- *  ti.sysbios.family.arm.m3.Hwi documentation for SYS/BIOS usage of
- *  interrupt priorities.  If the driver uses the ti.drivers.ports interface
- *  instead of making OS calls directly, then the HwiP port handles the
- *  interrupt priority in an OS specific way.  In the case of the SYS/BIOS
- *  port, intPriority is passed unmodified to Hwi_create().
+ *  underlying OS.  In the case of SYS/BIOS, intPriority is passed unmodified
+ *  to Hwi_create().
  *
  *  A sample structure is shown below:
  *  @code
@@ -155,7 +149,7 @@ typedef struct I2CTiva_HWAttrs {
  */
 typedef struct I2CTiva_Object {
     Semaphore_Struct    mutex;            /* Grants exclusive access to I2C */
-    Semaphore_Struct    transferComplete; /* Notify finished I2C transfer */
+    Semaphore_Struct    transferComplete; /* Signal I2C transfer complete */
 
     I2C_TransferMode    transferMode;        /* Blocking or Callback mode */
     I2C_CallbackFxn     transferCallbackFxn; /* Callback function pointer */
@@ -166,16 +160,17 @@ typedef struct I2CTiva_Object {
 
     I2C_Transaction    *currentTransaction; /* Pointer to current I2C transaction */
 
-    uint8_t            *writeBufIdx;    /* Internal inc. writeBuf index */
-    size_t              writeCountIdx;  /* Internal dec. writeCounter */
+    uint8_t            *writeBufIdx;    /* Internal writeBuf index (inc) */
+    size_t              writeCountIdx;  /* Internal writeCounter (dec) */
 
-    uint8_t            *readBufIdx;     /* Internal inc. readBuf index */
-    size_t              readCountIdx;   /* Internal dec. readCounter */
+    uint8_t            *readBufIdx;     /* Internal readBuf index (inc) */
+    size_t              readCountIdx;   /* Internal readCounter (dec) */
 
     /* I2C transaction pointers for I2C_MODE_CALLBACK */
     I2C_Transaction    *headPtr;        /* Head ptr for queued transactions */
     I2C_Transaction    *tailPtr;        /* Tail ptr for queued transactions */
 
+    bool                bitRate;        /* Bit rate (false=slow, true=fast) */
     bool                isOpen;         /* flag to indicate module is open */
 } I2CTiva_Object;
 

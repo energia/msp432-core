@@ -103,7 +103,7 @@ typedef enum ti_sysbios_BIOS_LibType ti_sysbios_BIOS_LibType;
 typedef xdc_Void (*ti_sysbios_BIOS_StartupFuncPtr)(xdc_Void);
 
 /* version */
-#define ti_sysbios_BIOS_version (0x64501)
+#define ti_sysbios_BIOS_version (0x64600)
 
 
 /*
@@ -311,6 +311,11 @@ __extern __FAR__ const CT__ti_sysbios_BIOS_installedErrorHook ti_sysbios_BIOS_in
 xdc__CODESECT(ti_sysbios_BIOS_Module__startupDone__S, "ti_sysbios_BIOS_Module__startupDone__S")
 __extern xdc_Bool ti_sysbios_BIOS_Module__startupDone__S( void );
 
+/* linkedWithIncorrectBootLibrary__E */
+#define ti_sysbios_BIOS_linkedWithIncorrectBootLibrary ti_sysbios_BIOS_linkedWithIncorrectBootLibrary__E
+xdc__CODESECT(ti_sysbios_BIOS_linkedWithIncorrectBootLibrary__E, "ti_sysbios_BIOS_linkedWithIncorrectBootLibrary")
+__extern xdc_Void ti_sysbios_BIOS_linkedWithIncorrectBootLibrary__E( void );
+
 /* start__E */
 #define ti_sysbios_BIOS_start ti_sysbios_BIOS_start__E
 xdc__CODESECT(ti_sysbios_BIOS_start__E, "ti_sysbios_BIOS_start")
@@ -513,6 +518,7 @@ extern struct ti_sysbios_BIOS_Module_State__ ti_sysbios_BIOS_Module__state__V;
 #define BIOS_setupSecureContext ti_sysbios_BIOS_setupSecureContext
 #define BIOS_useSK ti_sysbios_BIOS_useSK
 #define BIOS_installedErrorHook ti_sysbios_BIOS_installedErrorHook
+#define BIOS_linkedWithIncorrectBootLibrary ti_sysbios_BIOS_linkedWithIncorrectBootLibrary
 #define BIOS_start ti_sysbios_BIOS_start
 #define BIOS_exit ti_sysbios_BIOS_exit
 #define BIOS_getThreadType ti_sysbios_BIOS_getThreadType

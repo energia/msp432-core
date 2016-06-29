@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2015, Texas Instruments Incorporated
+ * Copyright (c) 2015-2016, Texas Instruments Incorporated
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -32,8 +32,7 @@
 /** ============================================================================
  * @file       PWMTimerTiva.h
  *
- * @brief      PWM driver implementation using Tiva General Purpose
- *             Timer peripherals.
+ * @brief      PWM driver implementation using Tiva General Purpose Timers.
  *
  * The PWM header file should be included in an application as follows:
  * @code
@@ -41,43 +40,22 @@
  * #include <ti/drivers/pwm/PWMTimerTiva.h>
  * @endcode
  *
- *  Refer to @ref PWM.h for a complete description of APIs & example of use.
+ * Refer to @ref PWM.h for a complete description of APIs & example of use.
  *
  * ## Operation #
  * This driver configures a Tiva General Purpose Timer (GPT) in PWM mode.
- * Creating a PWM instance will make the corresponding timer unavailable to the
- * TI-RTOS kernel until the PWM instance is closed. Additionally, if the
- * required timer is already used by the kernel, the PWM instance will not be
- * opened.
- *
  * When in PWM mode, each GPT is divided into 2 PWM outputs.  This driver
- * manages each output as independent PWM instances.  The timer is automatically
- * configured in count-down mode using the system clock as the source.
+ * manages each output as an independent PWM instance.  The timer is
+ * automatically configured in count-down mode using the system clock as
+ * the source.
  *
- * The period in the PWM_Params structure must be used to set the intial period.
- * After opening, the PWM_control() API can be used to change a period.  The
- * period and duty registers are 16 bits wide; thus, prescalars are used to
- * extend period and duty registers.  The maximum period supported is calculated
- * as:
- *     MAX_PERIOD = (((MAX_PRESCALAR + 1) * MAX_MATCH_VAL) / CYCLES_PER_US) - 1
- *     80 MHz clock: (((255 + 1) * 65535) / 80) - 1 = 209711 microseconds
- *     120 MHz clock: (((255 + 1) * 65535) / 120) - 1 = 139807 microseconds
- *
- * Below is an example of how to use the PWM_control() to change a period:
- *
- * @code
- * int rc = 0;
- * int newPeriod = 6000;   // Period in microseconds
- *
- * rc = PWM_control(pwmHandle, PWMTimerTiva_CHANGE_PERIOD, &newPeriod);
- * if (rc < 0) {
- *   // handle error condition
- * }
- * @endcode
- *
- * Updates to a PWM instance will occur instantaneously (i.e. GPT peripherals do
- * not have shadow registers).  Finally, if the duty supplied is greater than
- * the period, the output will remain in active state.
+ * The timers operate at the system clock frequency (80 MHz or 120 MHz). So each
+ * timer tick is 12.5 ns or 8.3 ns respectively. The period and duty registers
+ * are 16 bits wide; thus 8-bit prescalars are used to extend period and duty
+ * registers.  The maximum value supported is 16777215 ((2^24) - 1) timer
+ * counts; 209715 microseconds @ 80 MHz or 139810 microseconds @ 120 MHz.
+ * Updates to a PWM's period or duty will occur instantaneously
+ * (GPT peripherals do not have shadow registers).
  *
  * =============================================================================
  */
@@ -89,6 +67,7 @@
 extern "C" {
 #endif
 
+#include <stdbool.h>
 #include <ti/drivers/PWM.h>
 
 /**
@@ -115,45 +94,49 @@ extern "C" {
  *  @{
  */
 
-/*!
- *  @brief Control command to change the PWM period.
- */
-#define PWMTimerTiva_CMD_CHANGE_PERIOD      PWM_CMD_RESERVED + 0
-/** @}*/
+/* Add PWMTimerTiva_CMD_* macros here */
 
-/* BACKWARDS COMPATIBILITY */
-#define PWMTimerTiva_CHANGE_PERIOD  PWMTimerTiva_CMD_CHANGE_PERIOD
-/* BACKWARDS COMPATIBILITY */
+/** @}*/
 
 /* PWM function table pointer */
 extern const PWM_FxnTable PWMTimerTiva_fxnTable;
 
 /*!
- *  @brief  PWMTimerCC3200 Hardware attributes
+ *  @brief  PWMTimerTiva Hardware attributes
  *
  *  These fields are used by driverlib APIs and therefore must be populated by
- *  driverlib macro definitions. For CCWare these definitions are found in:
+ *  driverlib macro definitions. For TivaWare these definitions are found in:
  *      - inc/hw_memmap.h
+ *      - driverlib/gpio.h
+ *      - driverlib/pin_map.h
  *      - driverlib/timer.h
  *
  *  A sample structure is shown below:
  *  @code
- *  const PWMTimerTiva_HWAttrs PWMTimerTivaHWAttrs[] = {
+ *  const PWMTimerTiva_HWAttrsV1 pwmTivaHWAttrs[] = {
  *      {
- *          .baseAddr = TIMERA3_BASE,
- *          .timer = TIMER_A
- *      },
- *      {
- *          .baseAddr = TIMERA3_BASE,
- *          .timer = TIMER_B
- *      },
+ *          .timerBaseAddr = TIMER2_BASE,
+ *  	    .halfTimer = TIMER_A,
+ *          .pinTimerPwmMode = GPIO_PA4_T2CCP0,
+ *          .gpioBaseAddr = GPIO_PORTA_BASE,
+ *          .gpioPinIndex = GPIO_PIN_4
+ *      }
  *  };
  *  @endcode
  */
-typedef struct PWMTimerTiva_HWAttrs {
-    uint32_t baseAddr;        /*!< Timer peripheral base address */
-    uint16_t timer;           /*!< Half-timers to generate outputs */
-} PWMTimerTiva_HWAttrs;
+typedef struct PWMTimerTiva_HWAttrsV1 {
+    /*!< Timer peripheral base address */
+    uint32_t timerBaseAddr;
+    /*!< Half-timer to generate outputs (ex.: TIMER_A or TIMER_B) */
+    uint16_t halfTimer;
+    /*!< Timer output pin mode (ex.: GPIO_PA0_T0CCP0, GPIO_PA1_T0CCP1, etc.) */
+    uint32_t  pinTimerPwmMode;
+
+    /*!< GPIO port base address for the device pin. */
+    uint32_t gpioBaseAddr;
+    /*!< GPIO port pin index (ex.: GPIO_PIN_0, GPIO_PIN_4, etc.) */
+    uint8_t  gpioPinIndex;
+} PWMTimerTiva_HWAttrsV1;
 
 /*!
  *  @brief  PWMTimerTiva Object
@@ -161,10 +144,12 @@ typedef struct PWMTimerTiva_HWAttrs {
  *  The application must not access any member variables of this structure!
  */
 typedef struct PWMTimerTiva_Object {
-    uint32_t period;
-    uint32_t duty;
-    uint8_t  dutyMode;            /* Units in which duty is specified */
-    uint8_t  cyclesPerMicroSec;
+    uint32_t         duty;
+    uint32_t         period;
+    PWM_Duty_Units   dutyUnits;
+    PWM_Period_Units periodUnits;
+    PWM_IdleLevel    idleLevel;
+    bool             isOpen;
 } PWMTimerTiva_Object;
 
 #ifdef __cplusplus

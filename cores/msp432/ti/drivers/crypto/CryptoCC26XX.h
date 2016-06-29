@@ -145,17 +145,17 @@
  *  allocate the key over again.
  *
  *  ## Supported Functions ##
- *  | API function                   | Description                                       |
- *  |------------------------------- |---------------------------------------------------|
- *  | CryptoCC26XX_init()            | Function to initializes bios modules needed by CryptoCC26XX module |
- *  | CryptoCC26XX_open()            | Initialize Crypto and get crypto handle           |
- *  | CryptoCC26XX_close()           | Disable Crypto HW and destruct bios modules used by transactions |
- *  | CryptoCC26XX_Params_init()     | Initialize Crypto parameters                      |
- *  | CryptoCC26XX_Transac_init()    | Initialize Crypto transaction                     |
- *  | CryptoCC26XX_allocateKey()     | Allocate a key for current client and write key into one of the Crypto RAM locations            |
- *  | CryptoCC26XX_releaseKey()      | Release/deallocate a key for current client       |
- *  | CryptoCC26XX_transact()        | Start a crypto operation in blocking mode         |
- *  | CryptoCC26XX_transactPolling() | Start a crypto operation in polling mode          |
+ *  | API function                   | Description                                                                          |
+ *  |------------------------------- |--------------------------------------------------------------------------------------|
+ *  | CryptoCC26XX_init()            | Function to initializes bios modules needed by CryptoCC26XX module                   |
+ *  | CryptoCC26XX_open()            | Initialize Crypto and get crypto handle                                              |
+ *  | CryptoCC26XX_close()           | Disable Crypto HW and destruct bios modules used by transactions                     |
+ *  | CryptoCC26XX_Params_init()     | Initialize Crypto parameters                                                         |
+ *  | CryptoCC26XX_Transac_init()    | Initialize Crypto transaction                                                        |
+ *  | CryptoCC26XX_allocateKey()     | Allocate a key for current client and write key into one of the Crypto RAM locations |
+ *  | CryptoCC26XX_releaseKey()      | Release/deallocate a key for current client                                          |
+ *  | CryptoCC26XX_transact()        | Start a crypto operation in blocking mode                                            |
+ *  | CryptoCC26XX_transactPolling() | Start a crypto operation in polling mode                                             |
  *
  *  ## Unsupported functionality:
  *  Functionality that currently not supported:
@@ -163,14 +163,16 @@
  *  - Queued transactions for use in callback mode
  *
  *  ## Supported Operations ##
- *  | Operation Type                       | Description                                       |
- *  |--------------------------------------|---------------------------------------------------|
- *  | ::CRYPTOCC26XX_OP_AES_CCM            | AES-CCM Operation with Cryptation                 |
- *  | ::CRYPTOCC26XX_OP_AES_CCM_NOCRYPT    | AES-CCM Operation without Cryptation              |
- *  | ::CRYPTOCC26XX_OP_AES_CCMINV         | AES-CCM Inverse Operation with Cryptation         |
- *  | ::CRYPTOCC26XX_OP_AES_CCMINV_NOCRYPT | AES-CCM Inverse Operation without Cryptation      |
- *  | ::CRYPTOCC26XX_OP_AES_ECB            | AES-ECB Operation with Cryptation                 |
- *  | ::CRYPTOCC26XX_OP_AES_ECB_NOCRYPT    | AES-ECB Operation without Cryptation              |
+ *  | Operation Type                                | Description                                |
+ *  |-----------------------------------------------|--------------------------------------------|
+ *  | ::CRYPTOCC26XX_OP_AES_CCM_ENCRYPT             | AES-CCM encryption of AAD and plain text   |
+ *  | ::CRYPTOCC26XX_OP_AES_CCM_ENCRYPT_AAD_ONLY    | AES-CCM encryption of AAD only             |
+ *  | ::CRYPTOCC26XX_OP_AES_CCM_DECRYPT             | AES-CCM decryption of AAD and plain text   |
+ *  | ::CRYPTOCC26XX_OP_AES_CCM_DECRYPT_AAD_ONLY    | AES-CCM decryption of AAD only             |
+ *  | ::CRYPTOCC26XX_OP_AES_ECB_ENCRYPT             | AES-ECB encryption                         |
+ *  | ::CRYPTOCC26XX_OP_AES_ECB_DECRYPT             | AES-ECB decryption                         |
+ *  | ::CRYPTOCC26XX_OP_AES_CBC_ENCRYPT             | AES-CBC encryption                         |
+ *  | ::CRYPTOCC26XX_OP_AES_CBC_DECRYPT             | AES-CBC decryption                         |
  *
  *  ## Use Cases @anchor CRYPTO_USE_CASES ##
  *  ### AES ECB operation #
@@ -293,23 +295,29 @@ extern "C" {
 
 /** @}*/
 
-#define CRYPTOCC26XX_TIMEOUT 20        /*!< Timeout Return Code           */
+#define CRYPTOCC26XX_TIMEOUT 20 /*!< Timeout Return Code */
 
 #define CRYPTOCC26XX_STATUS_SUCCESS        0  /*!< Success Return Code           */
 #define CRYPTOCC26XX_STATUS_ERROR         -1  /*!< Error Return Code             */
 #define CRYPTOCC26XX_STATUS_UNDEFINEDCMD  -2  /*!< Command Undefined Return Code */
 
-#define CRYPTOCC26XX_OP_AES_CCM            0  /*!< AES-CCM Operation with Cryptation           */
-#define CRYPTOCC26XX_OP_AES_CCM_NOCRYPT    1  /*!< AES-CCM Operation without Cryptation        */
-#define CRYPTOCC26XX_OP_AES_CCMINV         2  /*!< AES-CCM Inverse Operation with Cryptation   */
-#define CRYPTOCC26XX_OP_AES_CCMINV_NOCRYPT 3  /*!< AES-CCM Inverse Operation without Cryptation*/
-#define CRYPTOCC26XX_OP_AES_ECB            4  /*!< AES-ECB Operation with Cryptation           */
-#define CRYPTOCC26XX_OP_AES_ECB_NOCRYPT    5  /*!< AES-ECB Operation without Cryptation        */
+#define CRYPTOCC26XX_OP_AES_CCM_ENCRYPT             0   /*!< AES-CCM encryption of both AAD and plain text */
+#define CRYPTOCC26XX_OP_AES_CCM_ENCRYPT_AAD_ONLY    1   /*!< AES-CCM encryption of ADD only */
+#define CRYPTOCC26XX_OP_AES_CCM_DECRYPT             2   /*!< AES-CCM decryption of both AAD and plain text */
+#define CRYPTOCC26XX_OP_AES_CCM_DECRYPT_AAD_ONLY    3   /*!< AES-CCM decryption of ADD only */
+#define CRYPTOCC26XX_OP_AES_ECB_ENCRYPT             4   /*!< AES-ECB encryption */
+#define CRYPTOCC26XX_OP_AES_ECB_DECRYPT             5   /*!< AES-ECB decryption */
+#define CRYPTOCC26XX_OP_AES_CBC_ENCRYPT             6   /*!< AES-CBC encryption */
+#define CRYPTOCC26XX_OP_AES_CBC_DECRYPT             7   /*!< AES-CBC decryption */
 
-/*! Macro for selecting the operation type, i.e. omitting the crypt bit */
-#define OP_TYPE(x)                 ((x)&0xFE)
-/*! Macro for getting cryptation flag from the operation type */
-#define DO_CRYPT(x)                ((x)&0x01?false:true)
+/* Deprecated operation mode names */
+#define CRYPTOCC26XX_OP_AES_CCM                 CRYPTOCC26XX_OP_AES_CCM_ENCRYPT
+#define CRYPTOCC26XX_OP_AES_CCM_NOCRYPT         CRYPTOCC26XX_OP_AES_CCM_ENCRYPT_AAD_ONLY
+#define CRYPTOCC26XX_OP_AES_CCMINV              CRYPTOCC26XX_OP_AES_CCM_DECRYPT
+#define CRYPTOCC26XX_OP_AES_CCMINV_NOCRYPT      CRYPTOCC26XX_OP_AES_CCM_DECRYPT_AAD_ONLY
+#define CRYPTOCC26XX_OP_AES_ECB                 CRYPTOCC26XX_OP_AES_ECB_ENCRYPT
+#define CRYPTOCC26XX_OP_AES_ECB_NOCRYPT         CRYPTOCC26XX_OP_AES_ECB_DECRYPT
+
 
 /*
  * The following allows this header file to be included in an application file
@@ -350,9 +358,13 @@ typedef enum CryptoCC26XX_Mode {
  *  This type holds the CryptoCC26XX operation.
  *
  *  Currently supported types are
- *  ::CRYPTOCC26XX_OP_AES_CCM, ::CRYPTOCC26XX_OP_AES_CCMINV,
- *  ::CRYPTOCC26XX_OP_AES_ECB, ::CRYPTOCC26XX_OP_AES_CCM_NOCRYPT,
- *  ::CRYPTOCC26XX_OP_AES_CCMINV_NOCRYPT and ::CRYPTOCC26XX_OP_AES_ECB_NOCRYPT.
+ *
+ *  | Encryption                                    | Decryption                                    |
+ *  |-----------------------------------------------------------------------------------------------|
+ *  | ::CRYPTOCC26XX_OP_AES_CCM_ENCRYPT             | ::CRYPTOCC26XX_OP_AES_CCM_DECRYPT             |
+ *  | ::CRYPTOCC26XX_OP_AES_CCM_ENCRYPT_AAD_ONLY    | ::CRYPTOCC26XX_OP_AES_CCM_DECRYPT_AAD_ONLY    |
+ *  | ::CRYPTOCC26XX_OP_AES_ECB_ENCRYPT             | ::CRYPTOCC26XX_OP_AES_ECB_DECRYPT             |
+ *  | ::CRYPTOCC26XX_OP_AES_CBC_ENCRYPT             | ::CRYPTOCC26XX_OP_AES_CBC_DECRYPT             |
  */
 typedef uint8_t CryptoCC26XX_Operation;
 
@@ -421,9 +433,25 @@ typedef struct CryptoCC26XX_AESCCM_Transaction {
     char                   *header;         /*!< The Additional Authentication Data or AAD */
     void                   *msgOut;         /*!< A pointer to the output message location */
     uint8_t                 fieldLength;    /*!< The size of the length field (2 or 3) */
-    uint16_t                msgInLength;/*!< The length of the message */
+    uint16_t                msgInLength;    /*!< The length of the message */
     uint16_t                headerLength;   /*!< The length of the header in octets */
 } CryptoCC26XX_AESCCM_Transaction;
+
+/*!
+ *  @brief  CryptoCC26XX AES-CBC Transaction
+ *
+ *  This structure defines the nature of the AES-CBC transaction. An object of this structure must
+ *  be initialized by calling CryptoCC26XX_Transac_init().
+ */
+typedef struct CryptoCC26XX_AESCBC_Transaction {
+    CryptoCC26XX_Operation  opType;         /*!< The type of the crypto operation */
+    CryptoCC26XX_Mode       mode;           /*!< The mode of current transaction. Set by transact function. */
+    uint8_t                 keyIndex;       /*!< The key store index to be used */
+    void                    *nonce;         /*!< A pointer to 16 byte Nonce. */
+    void                    *msgIn;         /*!< A pointer to the octet string input message */
+    void                    *msgOut;        /*!< A pointer to the output message location */
+    uint16_t                msgInLength;    /*!< The length of the message */
+} CryptoCC26XX_AESCBC_Transaction;
 
 /*!
  *  @brief  CryptoCC26XX AES-ECB Transaction
@@ -604,7 +632,7 @@ void CryptoCC26XX_Transac_init(CryptoCC26XX_Transaction *trans, CryptoCC26XX_Ope
  *  @brief  Function that allocates key, writes key into key store RAM and returns
  *          a handle to CryptoCC26XX Key.
  *
- *  This function try to allocate the wanted key location, initiates an operation to
+ *  This function tries to allocate the wanted key location, initiates an operation to
  *  write a key into one of the keystore RAM entries and returns a key index integer
  *  to the calling client. The allocated key index shall be used when building a
  *  transaction data object, e.g. ::CryptoCC26XX_AESCCM_Transaction.keyIndex.
@@ -612,20 +640,45 @@ void CryptoCC26XX_Transac_init(CryptoCC26XX_Transaction *trans, CryptoCC26XX_Ope
  *  @pre    CryptoCC26XX_open() has to be called first.
  *          Calling context: Hwi, Swi and Task.
  *
- *  @param  handle       A CryptoCC26XX_Handle returned by CryptoCC26XX_open().
+ *  @param  handle          A CryptoCC26XX_Handle returned by CryptoCC26XX_open().
  *
- *  @param  keyLocation  The key location in key store to allocate. If set to
- *                       CRYPTOCC26XX_KEY_ANY, the first available key, starting
- *                       from highest index, will be allocated.
+ *  @param  keyLocation     The key location in key store to allocate. If set to
+ *                          CRYPTOCC26XX_KEY_ANY, the first available key, starting
+ *                          from highest index, will be allocated.
  *
- *  @param  keySrc       A pointer to buffer containing key to be written.
+ *  @param  keySrc          A pointer to buffer containing key to be written. If this pointer is NULL,
+ *                          the key store will be reserved for the handle, but no key will be written to the key store.
  *
  *  @return An integer representing the index allocated in key store or a
  *  CRYPTOCC26XX_STATUS_ERROR on an error.
  *
  *  @sa     CryptoCC26XX_releaseKey()
+ *  @sa     CryptoCC26XX_loadKey()
  */
 int CryptoCC26XX_allocateKey(CryptoCC26XX_Handle handle, CryptoCC26XX_KeyLocation keyLocation, const uint32_t *keySrc);
+
+
+/*!
+ *  @brief  Function that writes a given key into a key store
+ *
+ *  This function loads a key into a keystore without needing to release the key store and
+ *  re-allocate it using CryptoCC26XX_releaseKey() and  CryptoCC26XX_allocateKey().
+ *
+ *  @pre    CryptoCC26XX_open() and CryptoCC26XX_allocateKey() have to be called first.
+ *          Calling context: Hwi, Swi and Task.
+ *
+ *  @param  handle      A CryptoCC26XX_Handle returned by CryptoCC26XX_open().
+ *
+ *  @param  keyIndex    A key index returned by a previous call to CryptoCC26XX_allocateKey().
+ *
+ *  @param  keySrc      A pointer to buffer containing a key.
+ *
+ *  @return An integer representing success (::CRYPTOCC26XX_STATUS_SUCCESS) or an error (::CRYPTOCC26XX_STATUS_ERROR).
+ *
+ *  @sa     CryptoCC26XX_releaseKey()
+ *  @sa     CryptoCC26XX_loadKey()
+ */
+int CryptoCC26XX_loadKey(CryptoCC26XX_Handle handle, int keyIndex, const uint32_t *keySrc);
 
 /*!
  *  @brief  Function that releases the specified CryptoCC26XX Key.

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2015, Texas Instruments Incorporated
+ * Copyright (c) 2015-2016, Texas Instruments Incorporated
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -53,6 +53,20 @@
  *  application. The specific peripheral implementations are responsible to
  *  create all the SYS/BIOS specific primitives to allow for thread-safe
  *  operation.
+ *
+ *  The UART driver allows full duplex data transfers. Therefore, it is
+ *  possible to call UART_read() and UART_write() at the same time (for
+ *  either UART_MODE_CALLBACK and UART_MODE_BLOCKING modes).
+ *  It is not possible, however, to issue multiple concurrent operations in
+ *  the same direction.  For example, if one thread calls
+ *  UART_read(uart0, buffer0...), any other thread attempting
+ *  UART_read(uart0, buffer1...) will result in an error of
+ *  UART_ERROR, until all the data from the first UART_read() has been
+ *  transferred to buffer0.  This applies to both UART_MODE_CALLBACK and
+ *  UART_MODE_BLOCKING modes.  So applications must either synchronize
+ *  UART_read() (or UART_write()) calls that use the same UART handle, or
+ *  check for the UART_ERROR return code indicating that a transfer is still
+ *  ongoing.
  *
  *  ## Opening the driver #
  *
@@ -569,6 +583,8 @@ typedef struct UART_Config {
  *  @brief  Function to close a UART peripheral specified by the UART handle
  *
  *  @pre    UART_open() has been called.
+ *  @pre    Ongoing asynchronous read or write have been cancelled using
+ *          UART_readCancel() or UART_writeCancel() respectively.
  *
  *  @param  handle      A UART_Handle returned from UART_open()
  *
@@ -672,35 +688,43 @@ extern UART_Handle UART_open(unsigned int index, UART_Params *params);
 extern void UART_Params_init(UART_Params *params);
 
 /*!
- *  @brief  Function that writes data to a UART with interrupts enabled. Usage
- *          of this API is mutually exclusive with usage of
- *          UART_writePolling(). In other words, for an opened UART peripheral,
- *          either UART_write() or UART_writePolling() may be used, but not
- *          both.
+ *  @brief  Function that writes data to a UART with interrupts enabled.
  *
- *  In UART_MODE_BLOCKING, UART_write() will block task execution until all
+ *  %UART_write() writes data from a memory buffer to the UART interface.
+ *  The source is specified by \a buffer and the number of bytes to write
+ *  is given by \a size.
+ *
+ *  In ::UART_MODE_BLOCKING, UART_write() blocks task execution until all
  *  the data in buffer has been written.
  *
- *  In UART_MODE_CALLBACK, UART_write() does not block task execution and calls
- *  a callback function specified by writeCallback. The callback function can
- *  occur in the caller's task context or in a HWI or SWI context, depending on the device.
+ *  In ::UART_MODE_CALLBACK, %UART_write() does not block task execution.
+ *  Instead, a callback function specified by UART_Params::writeCallback is
+ *  called when the transfer is finished.
+ *  The callback function can occur in the caller's task context or in a HWI or
+ *  SWI context, depending on the device implementation.
+ *  An unfinished asynchronous write operation must always be cancelled using
+ *  UART_writeCancel() before calling UART_close().
  *
- *  @warning It is STRONGLY discouraged to call UART_write from its own callback
- *           function (UART_MODE_CALLBACK).
+ *  %UART_write() is mutually exclusive to UART_writePolling(). For an opened
+ *  UART peripheral, either UART_write() or UART_writePolling() can be used,
+ *  but not both.
+ *
+ *  @warning Do not call %UART_write() from its own callback function when in
+ *  ::UART_MODE_CALLBACK.
  *
  *  @sa UART_writePolling()
  *
- *  @param  handle      A UART_Handle
+ *  @param  handle      A UART_Handle returned by UART_open()
  *
- *  @param  buffer      A WO (write-only) pointer to buffer containing data to
- *                      be written to the UART.
+ *  @param  buffer      A read-only pointer to buffer containing data to
+ *                      be written to the UART
  *
  *  @param  size        The number of bytes in the buffer that should be written
- *                      to the UART.
+ *                      to the UART
  *
  *  @return Returns the number of bytes that have been written to the UART.
- *          If an error occurs, UART_ERROR is returned. In UART_MODE_CALLBACK,
- *          the return value is always 0.
+ *          If an error occurs, ::UART_ERROR is returned.
+ *          In ::UART_MODE_CALLBACK mode, the return value is always 0.
  */
 extern int UART_write(UART_Handle handle, const void *buffer, size_t size);
 
@@ -716,13 +740,13 @@ extern int UART_write(UART_Handle handle, const void *buffer, size_t size);
  *
  *  @sa UART_write()
  *
- *  @param  handle      A UART_Handle
+ *  @param  handle      A UART_Handle returned by UART_open()
  *
- *  @param  buffer      A pointer to the buffer containing the data to
- *                      be written to the UART.
+ *  @param  buffer      A read-only pointer to the buffer containing the data to
+ *                      be written to the UART
  *
  *  @param  size        The number of bytes in the buffer that should be written
- *                      to the UART.
+ *                      to the UART
  *
  *  @return Returns the number of bytes that have been written to the UART.
  *          If an error occurs, UART_ERROR is returned.
@@ -733,35 +757,43 @@ extern int UART_writePolling(UART_Handle handle, const void *buffer,
 /*!
  *  @brief  Function that cancels a UART_write() function call.
  *
- *  This function cancels a UART_write() operation to a UART peripheral.
- *  This function is only applicable to UART_MODE_CALLBACK.
+ *  This function cancels an asynchronous UART_write() operation and is only
+ *  applicable in ::UART_MODE_CALLBACK.
  *
- *  @param  handle      A UART_Handle
+ *  @param  handle      A UART_Handle returned by UART_open()
  */
 extern void UART_writeCancel(UART_Handle handle);
 
 /*!
- *  @brief  Function that reads data from a UART with interrupt enabled. This
- *          API must be used mutually exclusive with UART_readPolling().
+ *  @brief  Function that reads data from a UART with interrupt enabled.
  *
- *  This function initiates an operation to read data from a UART controller.
+ *  %UART_read() reads data from a UART controller. The destination is specified
+ *  by \a buffer and the number of bytes to read is given by \a size.
  *
- *  In UART_MODE_BLOCKING, UART_read() will block task execution until all
+ *  In ::UART_MODE_BLOCKING, %UART_read() blocks task execution until all
  *  the data in buffer has been read.
  *
- *  In UART_MODE_CALLBACK, UART_read does not block task execution an calls a
- *  callback function specified by readCallback. The callback function can
- *  occur in the caller's or in HWI or SWI context, depending on the device.
+ *  In ::UART_MODE_CALLBACK, %UART_read() does not block task execution.
+ *  Instead, a callback function specified by UART_Params::readCallback
+ *  is called when the transfer is finished.
+ *  The callback function can occur in the caller's context or in HWI or SWI
+ *  context, depending on the device-specific implementation.
+ *  An unfinished asynchronous read operation must always be cancelled using
+ *  UART_readCancel() before calling UART_close().
  *
- *  @warning It is STRONGLY discouraged to call UART_read from its own callback
- *           function (UART_MODE_CALLBACK).
+ *  %UART_read() is mutually exclusive to UART_readPolling(). For an opened
+ *  UART peripheral, either %UART_read() or UART_readPolling() can be used,
+ *  but not both.
+ *
+ *  @warning Do not call %UART_read() from its own callback function when in
+ *  ::UART_MODE_CALLBACK.
  *
  *  @sa UART_readPolling()
  *
- *  @param  handle      A UART_Handle
+ *  @param  handle      A UART_Handle returned by UART_open()
  *
- *  @param  buffer      A RO (read-only) pointer to an empty buffer in which
- *                      received data should be written to.
+ *  @param  buffer      A pointer to an empty buffer to which
+ *                      received data should be written
  *
  *  @param  size        The number of bytes to be written into buffer
  *
@@ -780,10 +812,10 @@ extern int UART_read(UART_Handle handle, void *buffer, size_t size);
  *
  *  @sa UART_read()
  *
- *  @param  handle      A UART_Handle
+ *  @param  handle      A UART_Handle returned by UART_open()
  *
- *  @param  buffer      A RO (read-only) pointer to an empty buffer in which
- *                      received data should be written to.
+ *  @param  buffer      A pointer to an empty buffer in which
+ *                      received data should be written to
  *
  *  @param  size        The number of bytes to be written into buffer
  *
@@ -795,10 +827,10 @@ extern int UART_readPolling(UART_Handle handle, void *buffer, size_t size);
 /*!
  *  @brief  Function that cancels a UART_read() function call.
  *
- *  This function cancels a UART_read() operation for a UART peripheral. This
- *  function is only applicable to UART_MODE_CALLBACK.
+ *  This function cancels an asynchronous UART_read() operation and is only
+ *  applicable in ::UART_MODE_CALLBACK.
  *
- *  @param  handle      A UART_Handle
+ *  @param  handle      A UART_Handle returned by UART_open()
  */
 extern void UART_readCancel(UART_Handle handle);
 

@@ -1,10 +1,10 @@
 /*
  * -------------------------------------------
- *    MSP432 DriverLib - v3_10_00_09 
+ *    MSP432 DriverLib - v3_21_00_05 
  * -------------------------------------------
  *
  * --COPYRIGHT--,BSD,BSD
- * Copyright (c) 2014, Texas Instruments Incorporated
+ * Copyright (c) 2016, Texas Instruments Incorporated
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -314,7 +314,7 @@ void Timer_A_initCapture(uint32_t timer,
     }
     uint8_t idx = (config->captureRegister>>1)-1;
     TIMER_A_CMSIS(timer)->CCTL[idx] =
-    		(TIMER_A_CMSIS(timer)->CCTL[idx]
+            (TIMER_A_CMSIS(timer)->CCTL[idx]
                     & ~(TIMER_A_CAPTUREMODE_RISING_AND_FALLING_EDGE
                             | TIMER_A_CAPTURE_INPUTSELECT_Vcc
                             | TIMER_A_CAPTURE_SYNCHRONOUS | TIMER_A_DO_CLEAR
@@ -379,7 +379,7 @@ void Timer_A_initCompare(uint32_t timer,
     uint8_t idx = (config->compareRegister>>1)-1;
     TIMER_A_CMSIS(timer)->CCTL[idx] =
             (TIMER_A_CMSIS(timer)->CCTL[idx]
-			 & ~(TIMER_A_CAPTURECOMPARE_INTERRUPT_ENABLE
+             & ~(TIMER_A_CAPTURECOMPARE_INTERRUPT_ENABLE
              | TIMER_A_OUTPUTMODE_RESET_SET | TIMER_A_CCTLN_CAP))
              | (config->compareInterruptEnable + config->compareOutputMode);
 
@@ -497,9 +497,9 @@ void Timer_A_setOutputForOutputModeOutBitValue(uint32_t timer,
         uint_fast16_t captureCompareRegister,
         uint_fast8_t outputModeOutBitValue)
 {
-	uint8_t idx = (captureCompareRegister>>1) - 1;
-	TIMER_A_CMSIS(timer)->CCTL[idx] =
-			((TIMER_A_CMSIS(timer)->CCTL[idx])
+    uint8_t idx = (captureCompareRegister>>1) - 1;
+    TIMER_A_CMSIS(timer)->CCTL[idx] =
+            ((TIMER_A_CMSIS(timer)->CCTL[idx])
                     & ~(TIMER_A_OUTPUTMODE_RESET_SET))
                     | (outputModeOutBitValue);
 }
@@ -693,7 +693,7 @@ uint32_t Timer_A_getCaptureCompareEnabledInterruptStatus(uint32_t timer,
 {
     uint8_t idx = (captureCompareRegister>>1) - 1;
     if (BITBAND_PERI(TIMER_A_CMSIS(timer)->CCTL[idx],TIMER_A_CCTLN_CCIE_OFS))
-    	return Timer_A_getCaptureCompareInterruptStatus(timer,
+        return Timer_A_getCaptureCompareInterruptStatus(timer,
                 captureCompareRegister,
                 TIMER_A_CAPTURE_OVERFLOW |
                 TIMER_A_CAPTURECOMPARE_INTERRUPT_FLAG);

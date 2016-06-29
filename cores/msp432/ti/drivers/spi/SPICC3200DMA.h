@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2015, Texas Instruments Incorporated
+ * Copyright (c) 2015-2016, Texas Instruments Incorporated
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -113,6 +113,7 @@ extern "C" {
 #include <ti/drivers/ports/SemaphoreP.h>
 #include <ti/drivers/Power.h>
 #include <ti/drivers/SPI.h>
+#include <ti/drivers/dma/UDMACC3200.h>
 
 /**
  *  @addtogroup SPI_STATUS
@@ -285,6 +286,9 @@ typedef struct SPICC3200DMA_Object {
     SPICC3200DMA_FrameSize frameSize;
 
     bool                   isOpen;
+
+    /* UDMA */
+    UDMACC3200_Handle      dmaHandle;
 } SPICC3200DMA_Object, *SPICC3200DMA_Handle;
 
 #ifdef __cplusplus

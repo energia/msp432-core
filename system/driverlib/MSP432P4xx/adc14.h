@@ -1,10 +1,10 @@
 /*
  * -------------------------------------------
- *    MSP432 DriverLib - v3_10_00_09 
+ *    MSP432 DriverLib - v3_21_00_05 
  * -------------------------------------------
  *
  * --COPYRIGHT--,BSD,BSD
- * Copyright (c) 2014, Texas Instruments Incorporated
+ * Copyright (c) 2016, Texas Instruments Incorporated
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -571,12 +571,12 @@ extern bool ADC14_isBusy(void);
 //!
 //! \param differntialMode selects if the channel selected by the
 //!     channelSelect will be configured in differential mode. If this
-//!     parameter is given for false, the configured channel will be paired
+//!     parameter is given as true, the configured channel will be paired
 //!     with its neighbor in differential mode. for example, if channel A0 or A1
 //!     is selected, the channel configured will be the difference between A0
 //!     and A1. If A2 or A3 are selected, the channel configured will be the
 //!     difference between A2 and A3 (and so on). Users can enter true or false,
-//!     or one ofl the following values:
+//!     or one of the following values:
 //!         - ADC_NONDIFFERENTIAL_INPUTS
 //!         - ADC_DIFFERENTIAL_INPUTS
 //!

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2015, Texas Instruments Incorporated
+ * Copyright (c) 2015-2016, Texas Instruments Incorporated
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -120,6 +120,7 @@ extern "C" {
 #include <ti/drivers/ports/SemaphoreP.h>
 #include <ti/drivers/Power.h>
 #include <ti/drivers/SPI.h>
+#include <ti/drivers/dma/UDMAMSP432.h>
 
 /**
  *  @addtogroup SPI_STATUS
@@ -237,7 +238,7 @@ typedef struct SPIMSP432DMA_Object {
 
     Power_NotifyObj   perfChangeNotify;
     uint32_t          perfConstraintMask;
-
+    UDMAMSP432_Handle dmaHandle;
 } SPIMSP432DMA_Object, *SPIMSP432DMA_Handle;
 
 #ifdef __cplusplus

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2015, Texas Instruments Incorporated
+ * Copyright (c) 2015-2016, Texas Instruments Incorporated
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -324,6 +324,12 @@ extern PIN_Status PINCC26XX_setWakeup(const PIN_Config aPinCfg[]);
  */
 extern int_t PINCC26XX_getMux(PIN_Id pinId);
 
+/** @brief Get device-specific count of how many pins are available on this device and package
+ *
+ *  @return Device and package specific pin count
+ *  @note  Mostly used by driver code
+ */
+extern uint_t PINCC26XX_getPinCount();
 
 /** @brief Connect pin to HW peripheral, signal or to GPIO
  *

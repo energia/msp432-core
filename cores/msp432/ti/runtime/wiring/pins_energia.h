@@ -21,6 +21,8 @@
 #include <ti/runtime/wiring/cc13xx/variants/LAUNCHXL_CC1310/pins_energia.h>
 #elif defined(BOARD_LAUNCHXL_CC1350)
 #include <ti/runtime/wiring/cc13xx/variants/LAUNCHXL_CC1350/pins_energia.h>
+#elif defined(BOARD_CC1350STK)
+#include <ti/runtime/wiring/cc13xx/variants/CC1350STK/pins_energia.h>
 #endif
 
 #endif

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2015, Texas Instruments Incorporated
+ * Copyright (c) 2015-2016, Texas Instruments Incorporated
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -42,7 +42,7 @@
  *  #include <ti/drivers/I2CMSP432.h>
  *  @endcode
  *
- *  Refer to @ref I2C.h for a complete description of APIs & example of use.
+ *  Refer to @ref I2C.h for a complete description of APIs and usage.
  *
  *  ============================================================================
  */
@@ -113,15 +113,10 @@ typedef enum I2CMSP432_Mode {
  *  driverlib macro definitions. For MSP430Ware these definitions are found in:
  *      - i2c.h
  *
- *  intPriority is the I2C peripheral's interrupt priority, as defined by the
- *  underlying OS.  It is passed unmodified to the underlying OS's interrupt
- *  handler creation code, so you need to refer to the OS documentation
- *  for usage.  For example, for SYS/BIOS applications, refer to the
- *  ti.sysbios.family.arm.m3.Hwi documentation for SYS/BIOS usage of
- *  interrupt priorities.  If the driver uses the ti.drivers.ports interface
- *  instead of making OS calls directly, then the HwiP port handles the
- *  interrupt priority in an OS specific way.  In the case of the SYS/BIOS
- *  port, intPriority is passed unmodified to Hwi_create().
+ *  intPriority is the I2C peripheral's interrupt priority. This driver uses
+ *  the HwiP port interface, which handles the interrupt priority in the OS
+ *  appropriate way. In the case of the SYS/BIOS implementation, intPriority
+ *  is passed unmodified to Hwi_create().
  *
  *  A sample structure is shown below:
  *  @code
@@ -171,8 +166,8 @@ typedef struct I2CMSP432_Object {
 
     volatile I2CMSP432_Mode mode;           /* Stores the I2C state */
     I2C_TransferMode  transferMode;         /* Blocking or Callback mode */
-    I2C_BitRate       bitRate;              /* SPI bit rate in Hz */
-    bool              isOpen;               /* To determine if the SPI is open */
+    I2C_BitRate       bitRate;              /* I2C bit rate in Hz */
+    bool              isOpen;               /* Flag set if the I2C is open */
 } I2CMSP432_Object;
 
 #ifdef __cplusplus

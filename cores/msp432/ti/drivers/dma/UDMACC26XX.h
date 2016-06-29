@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2015, Texas Instruments Incorporated
+ * Copyright (c) 2015-2016, Texas Instruments Incorporated
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -272,7 +272,7 @@ __STATIC_INLINE void UDMACC26XX_init(UDMACC26XX_Handle handle)
  *  @pre    UDMACC26XX_init() has to be called first.
  *          Calling context: Task
  *
- *  @return UDMACC26XX_Handle on success or a NULL on an error or if it has been
+ *  @return UDMACC26XX_Handle on success or NULL if error or if it has been
  *          already opened
  *
  *  @sa     UDMACC26XX_close()

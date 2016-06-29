@@ -332,7 +332,7 @@ __extern xdc_Void ti_sysbios_heaps_HeapTrack_printHeap__E( ti_sysbios_heaps_Heap
 /* printTrack__I */
 #define ti_sysbios_heaps_HeapTrack_printTrack ti_sysbios_heaps_HeapTrack_printTrack__I
 xdc__CODESECT(ti_sysbios_heaps_HeapTrack_printTrack__I, "ti_sysbios_heaps_HeapTrack_printTrack")
-__extern xdc_Void ti_sysbios_heaps_HeapTrack_printTrack__I( ti_sysbios_heaps_HeapTrack_Tracker *tracker, ti_sysbios_heaps_HeapTrack_Handle handle );
+__extern xdc_Bool ti_sysbios_heaps_HeapTrack_printTrack__I( ti_sysbios_heaps_HeapTrack_Tracker *tracker, ti_sysbios_heaps_HeapTrack_Handle handle );
 
 
 /*

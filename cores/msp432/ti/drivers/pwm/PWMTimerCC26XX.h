@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2015, Texas Instruments Incorporated
+ * Copyright (c) 2015-2016, Texas Instruments Incorporated
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -29,155 +29,180 @@
  * OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE,
  * EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-/** ============================================================================
- * @file       PWMTimerCC26XX.h
+/*!*****************************************************************************
+ *  @file       PWMTimerCC26XX.h
+ *  @brief      PWM driver implementation for CC26XX/CC13XX
  *
- * @brief      PWM driver implementation using Tiva General Purpose
- *             Timer peripherals.
+ *  # Overview #
+ * The general PWM API should be used in application code, i.e. PWM_open()
+ * should be used instead of PWMTimerCC26XX_open(). The board file will define the device
+ * specific config, and casting in the general API will ensure that the correct
+ * device specific functions are called.
  *
- * The PWM header file should be included in an application as follows:
- * @code
- * #include <ti/drivers/PWM.h>
- * #include <ti/drivers/pwm/PWMTimerCC26XX.h>
- * @endcode
+ * # General Behavior #
+ * Before using PWM on CC26XX:
+ *   - The Timer HW is configured and system dependencies (for example IOs,
+ *     power, etc.) is set by calling PWM_open().
  *
- * ## Operation #
- * This driver configures a Tiva General Purpose Timer (GPT) in PWM mode.
- * Creating a PWM instance will make the corresponding timer unavailable to the
- * TI-RTOS kernel until the PWM instance is closed. Additionally, if the
- * required timer is already used by the kernel, the PWM instance will not be
- * opened.
+ * # Error handling #
+ * If providing unsupported arguments to an API returning an error code, the
+ * PWM configuration will *not* be updated and PWM will stay in the mode it
+ * was already configured to.
  *
- * When in PWM mode, each GPT is divided into 2 PWM outputs.  This driver
- * manages each output as independent PWM instances.  The timer is automatically
- * configured in count-down mode using the system clock as the source.
+ * # Power Management #
+ * The TI-RTOS power management framework will try to put the device into the most
+ * power efficient mode whenever possible. Please see the technical reference
+ * manual for further details on each power mode.
  *
- * The period in the PWM_Params structure must be used to set the intial period.
- * After opening, the PWM_control() API can be used to change a period.  The
- * period and duty registers are 16 bits wide; thus, prescalars are used to
- * extend period and duty registers.  The maximum period supported is calculated
- * as:
- *     MAX_PERIOD = (((MAX_PRESCALAR + 1) * MAX_MATCH_VAL) / CYCLES_PER_US) - 1
- *     80 MHz clock: (((255 + 1) * 65535) / 80) - 1 = 209711 microseconds
- *     120 MHz clock: (((255 + 1) * 65535) / 120) - 1 = 139807 microseconds
+ *  The PWMTimerCC26XX.h driver is not explicitly setting a power constraint when the
+ *  PWM is running to prevent standby as this is assumed to be done in the
+ *  underlying GPTimer driver.
+ *  The following statements are valid:
+ *    - After PWM_open(): The device is still allowed to enter Standby. When the
+ *                        device is active the underlying GPTimer peripheral will
+ *                        be enabled and clocked.
+ *    - After PWM_start(): The device can only go to Idle power mode since the
+ *                         high-frequency clock is needed for PWM operation:
+ *    - After PWM_stop():  Conditions are equal as for after PWM_open
+ *    - After PWM_close(): The underlying GPTimer is turned off and the device
+ *                         is allowed to go to standby.
  *
- * Below is an example of how to use the PWM_control() to change a period:
+ *  # Accuracy #
+ *  The PWM output period and duty cycle are limited by the underlying timer.
+ *  In PWM mode the timer is effectively 24 bits which results in a minimum
+ *  frequency of 48MHz / (2^24-1) = 2.86Hz (349.525ms)
+ *  The driver will round off the configured duty and period to a value limited
+ *  by the timer resolution and the application is responsible for selecting
+ *  duty and period that works with the underlying timer if high accuracy is
+ *  needed.
+ *  The effect of this is most visible when using high output frequencies as the
+ *  available duty cycle resolution is reduced correspondingly. For a 24MHz PWM
+ *  only a 0%/50%/100% duty is available as the timer uses only counts 0 and 1.
+ *  Similarly for a 12MHz period the duty cycle will be limited to a 12.5%
+ *  resolution.
+ *  The PWM signals are generated using the high-frequency clock as source.
  *
- * @code
- * int rc = 0;
- * int newPeriod = 6000;   // Period in microseconds
+ *  If very high-accuracy outputs are needed, the application should request
+ *  using the external HF crystal:
+ *  @code
+ *  #include <ti/sysbios/family/arm/cc26xx/Power.h>
+ *  #include <ti/sysbios/family/arm/cc26xx/PowerCC2650.h>
+ *  Power_setDependency(XOSC_HF);
+ *  @endcode
  *
- * rc = PWM_control(pwmHandle, PWMTimerCC26XX_CHANGE_PERIOD, &newPeriod);
- * if (rc < 0) {
- *   // handle error condition
- * }
- * @endcode
+ *  # Limitations #
+ *  - The PWM output can currently not be synchronized with other PWM outputs
+ *  - The PWM driver does not support updating duty and period using DMA.
+ *  - When changing duty cycle there will be a period where the high level is
+ *    either too short or too high since the timer match value is updated.
+ *  # PWM usage #
  *
- * Updates to a PWM instance will occur instantaneously (i.e. GPT peripherals do
- * not have shadow registers).  Finally, if the duty supplied is greater than
- * the period, the output will remain in active state.
+ *  ## Basic PWM output ##
+ *  The below example will output a 8MHz PWM signal with 50% duty cycle.
+ *  @code
+ *  void taskFxn(UArg a0, UArg a1) {
+ *    PWM_Handle hPWM;
+ *    PWM_Params pp;
+ *    PWM_Params_init(&pp);
+ *    pp.idleLevel      = PWM_IDLE_LOW;
+ *    pp.period.unit    = PWM_PERIOD_HZ;
+ *    pp.period.value   = 8e6;
+ *    pp.duty.unit      = PWM_DUTY_FRACTION;
+ *    pp.duty.value     = PWM_DUTY_FRACTION_MAX / 2;
+ *    hPWM = PWM_open(Board_PWM0);
+ *    if(hPWM == NULL) {
+ *      Log_error0("Failed to open PWM");
+ *      Task_exit();
+ *    }
+ *    PWM_start(hPWM);
  *
- * =============================================================================
+ *    while(1) {
+ *      Task_sleep(BIOS_WAIT_FOREVER);
+ *    }
+ *    @endcode
+ *
+ *
+ *******************************************************************************
  */
-
-#ifndef ti_driver_pwm_PWMTimerCC26XX__include
-#define ti_driver_pwm_PWMTimerCC26XX__include
+#ifndef ti_drivers_pwm__PWMTimerCC26XX_include
+#define ti_drivers_pwm__PWMTimerCC26XX_include
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
+#include <stdint.h>
+#include <stdbool.h>
+
+#include <ti/drivers/PIN.h>
 #include <ti/drivers/PWM.h>
+#include <ti/drivers/timer/GPTimerCC26XX.h>
 
-/**
- *  @addtogroup PWM_STATUS
- *  PWMTimerCC26XX_STATUS_* macros are command codes only defined in the
- *  PWMTimerCC26XX.h driver implementation and need to:
- *  @code
- *  #include <ti/drivers/pwm/PWMTimerCC26XX.h>
- *  @endcode
- *  @{
+
+/*! PWMTimerCC26XX specific commands */
+
+/*! Timer debug stall mode (stop PWM output debugger halts CPU)
+    When enabled, PWM output will be HIGH when CPU is halted
  */
-
-/* Add PWMTimerCC26XX_STATUS_* macros here */
-
-/** @}*/
-
-/**
- *  @addtogroup PWM_CMD
- *  PWMTimerCC26XX_CMD_* macros are command codes only defined in the
- *  PWMTimerCC26XX.h driver implementation and need to:
- *  @code
- *  #include <ti/drivers/pwm/PWMTimerCC26XX.h>
- *  @endcode
- *  @{
- */
+#define PWMTimerCC26XX_CMD_DEBUG_STALL    PWM_CMD_RESERVED + 0
+/* Arguments for PWMTimerCC26XX_CMD_DEBUG_STALL */
+#define CMD_ARG_DEBUG_STALL_OFF      (uint32_t)GPTimerCC26XX_DEBUG_STALL_OFF
+#define CMD_ARG_DEBUG_STALL_ON       (uint32_t)GPTimerCC26XX_DEBUG_STALL_ON
 
 /*!
- *  @brief Control command to change the PWM period.
- */
-#define PWMTimerCC26XX_CMD_CHANGE_PERIOD    PWM_CMD_RESERVED + 0
-/** @}*/
-
-/* BACKWARDS COMPATIBILITY */
-#define PWMTimerCC26XX_CHANGE_PERIOD        PWMTimerCC26XX_CMD_CHANGE_PERIOD
-/* END BACKWARDS COMPATIBILITY */
-
-/* PWM function table pointer */
-extern const PWM_FxnTable PWMTimerCC26XX_fxnTable;
-
-/*!
- *  @brief  PWMTimerCC26XX PWM Pin Configuration
+ *  @brief  PWMTimer26XX Hardware attributes
  *
- *  Pin configuration of the pin that the PWM signal should
- *  be output from.
+ *  These fields are used by the driver to set up underlying PIN and GPTimer
+ *  driver statically. A sample structure is shown below:
  *
- *  Use the 'custom' field of the the PWM params passed to
- *  the PWM_open() call to override the default pwmPinId found in
- *  the HWAttrs structure.
- */
-typedef struct PWMTimerCC26XX_PWMPinCfg {
-    uint8_t pwmPinId;
- } PWMTimerCC26XX_PWMPinCfg;
-
- /*!
- *  @brief  PWMTimerCC26XX Hardware attributes
- *
- *  These fields are used by driverlib APIs and therefore must be populated by
- *  driverlib macro definitions. For CCWare these definitions are found in:
- *      - inc/hw_memmap.h
- *      - driverlib/timer.h
- *
- *  A sample structure is shown below:
  *  @code
- *  const PWMTimerCC26XX_HWAttrs PWMTimerCC26XXHWAttrs[] = {
- *      {TIMERA3_BASE, TIMER_A},
- *      {TIMERA3_BASE, TIMER_B},
+ *  // PWM configuration, one per PWM output
+ *  PWMTimerCC26XX_HwAttrs pwmtimerCC26xxHWAttrs[CC2650_PWMCOUNT] = {
+ *   { .pwmPin = Board_PWMPIN0, .gpTimerUnit = CC2650_GPTIMER0A } ,
+ *   { .pwmPin = Board_PWMPIN1, .gpTimerUnit = CC2650_GPTIMER0B } ,
+ *   { .pwmPin = Board_PWMPIN2, .gpTimerUnit = CC2650_GPTIMER1A } ,
+ *   { .pwmPin = Board_PWMPIN3, .gpTimerUnit = CC2650_GPTIMER1B } ,
+ *   { .pwmPin = Board_PWMPIN4, .gpTimerUnit = CC2650_GPTIMER2A } ,
+ *   { .pwmPin = Board_PWMPIN5, .gpTimerUnit = CC2650_GPTIMER2B } ,
+ *   { .pwmPin = Board_PWMPIN6, .gpTimerUnit = CC2650_GPTIMER3A } ,
+ *   { .pwmPin = Board_PWMPIN7, .gpTimerUnit = CC2650_GPTIMER3B } ,
  *  };
- *  @endcode
+ *    @endcode
  */
-typedef struct PWMTimerCC26XX_HWAttrs {
-    uint32_t   baseAddr;        /*!< Timer peripheral base address */
-    uint16_t   timer;           /*!< Half-timers to generate outputs */
-    uint32_t   powerMngrId;     /*!< UART Peripheral's power manager ID */
-    uint8_t    pwmPinId;        /*!< The PIN ID of the PWM output */
-} PWMTimerCC26XX_HWAttrs;
+typedef const struct PWMTimerCC26XX_HwAttrs
+{
+    PIN_Id  pwmPin;               /*!< PIN to output PWM signal on */
+    uint8_t gpTimerUnit;          /*!< GPTimer unit index (0A, 0B, 1A..) */
+} PWMTimerCC26XX_HwAttrs;
 
 /*!
- *  @brief  PWMTimerCC26XX Object
+ *  @brief  PWMTimer26XX Object
  *
- *  The application must not access any member variables of this structure!
+ * These fields are used by the driver to store and modify PWM configuration
+ * during run-time.
+ * The application must not edit any member variables of this structure.
+ * Appplications should also not access member variables of this structure
+ * as backwards compatibility is not guaranteed.
+ * A sample structure is shown below:
+ * @code
+ * // PWM object, one per PWM output
+ * PWMTimerCC26XX_Object pwmtimerCC26xxObjects[CC2650_PWMCOUNT];
+ * @endcode
  */
-typedef struct PWMTimerCC26XX_Object {
-    uint32_t period;
-    uint32_t duty;
-    uint8_t  dutyMode;            /* Units in which duty is specified */
-    uint8_t  cyclesPerMicroSec;
-    uint8_t  timerNum;            /* 0-7 */
+typedef struct PWMTimerCC26XX_Object
+{
+    bool                 isOpen;        /*!< open flag used to check if PWM is opened */
+    PWM_Period_Units     periodUnit;    /*!< Current period unit */
+    uint32_t             periodValue;   /*!< Current period value in unit */
+    uint32_t             periodCounts;  /*!< Current period in raw timer counts */
+    PWM_Duty_Units       dutyUnit;      /*!< Current duty cycle unit */
+    uint32_t             dutyValue;     /*!< Current duty cycle value in unit */
+    uint32_t             dutyCounts;    /*!< Current duty in raw timer counts */
+    PWM_IdleLevel        idleLevel;     /*!< PWM idle level when stopped / not started */
+    GPTimerCC26XX_Handle hTimer;        /*!< Handle to underlying GPTimer peripheral */
 } PWMTimerCC26XX_Object;
 
 #ifdef __cplusplus
 }
 #endif
-
-#endif /* ti_driver_pwm_PWMTimerCC26XX__include */
+#endif /* ti_driver_pwm_PWMTimerCC26XX_include */

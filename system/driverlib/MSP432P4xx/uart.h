@@ -1,10 +1,10 @@
 /*
  * -------------------------------------------
- *    MSP432 DriverLib - v3_10_00_09 
+ *    MSP432 DriverLib - v3_21_00_05 
  * -------------------------------------------
  *
  * --COPYRIGHT--,BSD,BSD
- * Copyright (c) 2014, Texas Instruments Incorporated
+ * Copyright (c) 2016, Texas Instruments Incorporated
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -61,7 +61,7 @@ extern "C"
 #include <msp.h>
 #include "eusci.h"
 
-#define DEFAULT_SYNC									0x00
+#define DEFAULT_SYNC                                    0x00
 #define EUSCI_A_UART_AUTOMATICBAUDRATE_SYNC             0x55
 
 #define EUSCI_A_UART_NO_PARITY                          0x00
@@ -72,7 +72,7 @@ extern "C"
 #define EUSCI_A_UART_LSB_FIRST                          0x00
 
 #define EUSCI_A_UART_MODE                               EUSCI_A_CTLW0_MODE_0
-#define EUSCI_A_UART_IDLE_LINE_MULTI_PROCESSOR_MODE		EUSCI_A_CTLW0_MODE_1
+#define EUSCI_A_UART_IDLE_LINE_MULTI_PROCESSOR_MODE        EUSCI_A_CTLW0_MODE_1
 #define EUSCI_A_UART_ADDRESS_BIT_MULTI_PROCESSOR_MODE   EUSCI_A_CTLW0_MODE_2
 #define EUSCI_A_UART_AUTOMATIC_BAUDRATE_DETECTION_MODE  EUSCI_A_CTLW0_MODE_3
 

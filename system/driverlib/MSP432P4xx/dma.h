@@ -1,10 +1,10 @@
 /*
  * -------------------------------------------
- *    MSP432 DriverLib - v3_10_00_09 
+ *    MSP432 DriverLib - v3_21_00_05 
  * -------------------------------------------
  *
  * --COPYRIGHT--,BSD,BSD
- * Copyright (c) 2014, Texas Instruments Incorporated
+ * Copyright (c) 2016, Texas Instruments Incorporated
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -430,10 +430,6 @@ extern void DMA_clearErrorStatus(void);
 //! Enables a DMA channel for operation.
 //!
 //! \param channelNum is the channel number to enable.
-//!
-//! This function enables a specific DMA channel for use.  This function must
-//! be used to enable a channel before it can be used to perform a DMA
-//! transfer.
 //!
 //! When a DMA transfer is completed, the channel is automatically disabled by
 //! the DMA controller.  Therefore, this function should be called prior to

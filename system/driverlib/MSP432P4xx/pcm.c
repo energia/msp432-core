@@ -1,10 +1,10 @@
 /*
  * -------------------------------------------
- *    MSP432 DriverLib - v3_10_00_09 
+ *    MSP432 DriverLib - v3_21_00_05 
  * -------------------------------------------
  *
  * --COPYRIGHT--,BSD,BSD
- * Copyright (c) 2014, Texas Instruments Incorporated
+ * Copyright (c) 2016, Texas Instruments Incorporated
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -405,7 +405,7 @@ bool PCM_setPowerStateNonBlocking(uint_fast8_t powerState)
 bool PCM_shutdownDevice(uint32_t shutdownMode)
 {
     uint32_t shutdownModeBits = (shutdownMode == PCM_LPM45) ?
-    		PCM_CTL0_LPMR_12 : PCM_CTL0_LPMR_10;
+            PCM_CTL0_LPMR_12 : PCM_CTL0_LPMR_10;
 
     ASSERT(
             shutdownMode == PCM_SHUTDOWN_PARTIAL
@@ -498,7 +498,7 @@ bool PCM_gotoLPM3(void)
 
     /* If we are in the middle of a shutdown, return false */
     if ((PCM->CTL0 & PCM_CTL0_LPMR_MASK) == PCM_CTL0_LPMR_10
-    		|| (PCM->CTL0 & PCM_CTL0_LPMR_MASK) == PCM_CTL0_LPMR_12)
+            || (PCM->CTL0 & PCM_CTL0_LPMR_MASK) == PCM_CTL0_LPMR_12)
         return false;
 
     currentPowerMode = PCM_getPowerMode();
@@ -548,13 +548,13 @@ void PCM_enableRudeMode(void)
 {
 
     PCM->CTL1 = (PCM->CTL1 & ~(PCM_CTL0_KEY_MASK)) | PCM_KEY
-    		| PCM_CTL1_FORCE_LPM_ENTRY;
+            | PCM_CTL1_FORCE_LPM_ENTRY;
 }
 
 void PCM_disableRudeMode(void)
 {
     PCM->CTL1 = (PCM->CTL1 & ~(PCM_CTL0_KEY_MASK | PCM_CTL1_FORCE_LPM_ENTRY))
-    		| PCM_KEY;
+            | PCM_KEY;
 }
 
 void PCM_enableInterrupt(uint32_t flags)

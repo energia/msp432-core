@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2015, Texas Instruments Incorporated
+ * Copyright (c) 2015-2016, Texas Instruments Incorporated
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -58,6 +58,7 @@ extern "C" {
 #include <ti/drivers/ports/HwiP.h>
 #include <ti/drivers/ports/SemaphoreP.h>
 #include <ti/drivers/utils/List.h>
+#include <ti/drivers/dma/UDMACC3200.h>
 
 /**
  *  @addtogroup I2S_STATUS
@@ -116,14 +117,6 @@ typedef enum I2SCC3200DMA_DataSize {
 /* I2S function table pointer */
 extern const I2S_FxnTable I2SCC3200DMA_fxnTable;
 
-/*Zero buffer to write when there is no data from the application*/
-extern unsigned short I2SCC3200DMA_zeroBuffer[32];
-extern I2S_BufDesc  I2SCC3200DMA_zeroBufDesc;
-
-/*Empty buffer to read into when there is no data requested
-  from the application*/
-extern unsigned char I2SCC3200DMA_emptyBuffer[32];
-extern I2S_BufDesc  I2SCC3200DMA_emptyBufDesc;
 
 /*!
  *  @brief      I2SCC3200DMA Hardware attributes
@@ -232,17 +225,21 @@ typedef struct I2SCC3200DMA_Object {
     SemaphoreP_Handle      readSem;             /* I2S read semaphore */
     HwiP_Handle            hwiHandle;
 
-    /* DMA write Ping pong mode */
-    bool                   i2sWritePingPongMode;
-    /* DMA read Ping pong mode */
-    bool                   i2sReadPingPongMode;
-
     /*!< Length of zero buffer to write in case of no data */
-    unsigned char         zeroWriteBufLength;
+    unsigned long          zeroWriteBufLength;
 
     /*!< Length of empty buffer to read in case of no data
          requested */
-    unsigned char         emptyReadBufLength;
+    unsigned long          emptyReadBufLength;
+
+    /* Current Write buffer descriptor pointer */
+    I2S_BufDesc            *CurrentWriteBufDesc;
+
+    /* Current Read buffer descriptor pointer */
+    I2S_BufDesc            *CurrentReadBufDesc;
+
+    /* UDMA */
+    UDMACC3200_Handle    dmaHandle;
 
     /* Lists for issue-reclaim mode */
     List_List             readActiveQueue;

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2015, Texas Instruments Incorporated
+ * Copyright (c) 2015-2016, Texas Instruments Incorporated
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -117,9 +117,9 @@ typedef uint32_t GPIO_PinConfig;
 #define GPIO_CFG_OUT_STR_HIGH      (((uint32_t) 2) << GPIO_CFG_OUT_STRENGTH_LSB)
 
 #define GPIO_CFG_INPUT             (((uint32_t) 1) << GPIO_CFG_IO_LSB) /*! Pin is an input. */
-#define GPIO_CFG_IN_NOPULL         (((uint32_t) 1) << GPIO_CFG_IO_LSB) /*! Input pin has no PU/PD */
-#define GPIO_CFG_IN_PU             (((uint32_t) 3) << GPIO_CFG_IO_LSB) /*! Input pin has Pullup */
-#define GPIO_CFG_IN_PD             (((uint32_t) 5) << GPIO_CFG_IO_LSB) /*! Input pin has Pulldown */
+#define GPIO_CFG_IN_NOPULL         (((uint32_t) 1) << GPIO_CFG_IO_LSB) /*! Input pin with no internal PU/PD */
+#define GPIO_CFG_IN_PU             (((uint32_t) 3) << GPIO_CFG_IO_LSB) /*! Input pin with internal PU */
+#define GPIO_CFG_IN_PD             (((uint32_t) 5) << GPIO_CFG_IO_LSB) /*! Input pin with internal PD */
 /** @} */
 
 /** @name GPIO_PinConfig pin interrupt configuration macros

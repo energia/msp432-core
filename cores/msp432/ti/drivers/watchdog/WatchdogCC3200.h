@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2015, Texas Instruments Incorporated
+ * Copyright (c) 2015-2016, Texas Instruments Incorporated
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -59,24 +59,38 @@
  *
  *  By default the Watchdog driver has resets turned on. However, they may be
  *  turned off in the Watchdog_Params which allows the Watchdog Timer to be
- *  used like another timer interrupt. This functionality is <b>not</b> supported by
- *  all platforms, refer to device specific documentation for details.
+ *  used like another timer interrupt. This functionality is <b>not</b>
+ *  supported by  all platforms, refer to device specific documentation for
+ *  details.
  *
  *  To have a user-defined function run at the warning interrupt, first define
  *  a void-type function that takes a Watchdog_Handle cast to a UArg as an
- *  argument such as the one shown below.
+ *  argument. The callback and code to start the Watchdog timer are shown below.
  *
  *  @code
- *  void callback(UArg handle);
+ *  void watchdogCallback(UArg handle);
  *
  *  ...
  *
  *  Watchdog_Handle handle;
  *  Watchdog_Params params;
+ *  uint32_t tickValue;
  *
  *  Watchdog_Params_init(&params);
- *  params.callbackFxn = callback;
+ *  params.callbackFxn = watchdogCallback;
  *  handle = Watchdog_open(Watchdog_configIndex, &params);
+ *  // Set timeout period to 100 ms
+ *  tickValue = Watchdog_convertMsToTicks(handle, 100);
+ *  Watchdog_setReload(handle, tickValue);
+ *
+ *  ...
+ *
+ *  void watchdogCallback(UArg handle)
+ *  {
+ *      // User-defined code here
+ *      ...
+ *
+ *  }
  *  @endcode
  *  ============================================================================
  */

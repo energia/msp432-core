@@ -1,10 +1,10 @@
 /*
  * -------------------------------------------
- *    MSP432 DriverLib - v3_10_00_09 
+ *    MSP432 DriverLib - v3_21_00_05 
  * -------------------------------------------
  *
  * --COPYRIGHT--,BSD,BSD
- * Copyright (c) 2014, Texas Instruments Incorporated
+ * Copyright (c) 2016, Texas Instruments Incorporated
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -67,15 +67,15 @@ extern "C"
 
 #define TIMER_OFFSET    0x020
 
-#define TIMER32_0_BASE   TIMER32_1
-#define TIMER32_1_BASE   TIMER32_2
+#define TIMER32_0_BASE   (uint32_t)TIMER32_1
+#define TIMER32_1_BASE   (uint32_t)TIMER32_2
 
 #define TIMER32_0_INTERRUPT         INT_T32_INT1
 #define TIMER32_1_INTERRUPT         INT_T32_INT2
 #define TIMER32_COMBINED_INTERRUPT  INT_T32_INTC
 
-#define TIMER32_1_MODULE6BIT           0x00
-#define TIMER32_32BIT           0x01
+#define TIMER32_16BIT            0x00
+#define TIMER32_32BIT            0x01
 
 #define TIMER32_PRESCALER_1      0x00
 #define TIMER32_PRESCALER_16     0x04
@@ -107,7 +107,7 @@ extern "C"
 //!         - \b TIMER32_PRESCALER_256
 //! \param resolution is the bit resolution of the Timer32 module.
 //!         Valid values are
-//!         - \b TIMER32_1_MODULE6BIT [DEFAULT]
+//!         - \b TIMER32_16BIT [DEFAULT]
 //!         - \b TIMER32_32BIT
 //! \param mode selects between free run and periodic mode. In free run
 //! mode, the value of the timer is reset to UINT16_MAX (for 16-bit mode) or

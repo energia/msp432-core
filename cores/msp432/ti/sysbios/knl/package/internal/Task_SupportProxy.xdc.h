@@ -45,6 +45,10 @@
 #undef ti_sysbios_knl_Task_SupportProxy_getDefaultStackSize
 #define ti_sysbios_knl_Task_SupportProxy_getDefaultStackSize ti_sysbios_knl_Task_SupportProxy_getDefaultStackSize__E
 
+/* getCheckValueAddr */
+#undef ti_sysbios_knl_Task_SupportProxy_getCheckValueAddr
+#define ti_sysbios_knl_Task_SupportProxy_getCheckValueAddr ti_sysbios_knl_Task_SupportProxy_getCheckValueAddr__E
+
 /* Module_startup */
 #undef ti_sysbios_knl_Task_SupportProxy_Module_startup
 #define ti_sysbios_knl_Task_SupportProxy_Module_startup ti_sysbios_knl_Task_SupportProxy_Module_startup__E

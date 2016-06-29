@@ -62,6 +62,10 @@
 /*
  *  =============================== DMA ===============================
  */
+
+#include <ti/drivers/dma/UDMAMSP432.h>
+
+
 #if defined(__TI_COMPILER_VERSION__)
 #pragma DATA_ALIGN(dmaControlTable, 256)
 #elif defined(__IAR_SYSTEMS_ICC__)
@@ -70,41 +74,35 @@
 __attribute__ ((aligned (256)))
 #endif
 static DMA_ControlTable dmaControlTable[8];
-static bool dmaInitialized = false;
 
 /*
- *  ======== Board_errorDMAHwi ========
+ *  ======== dmaErrorHwi ========
+ *  This is the handler for the uDMA error interrupt.
  */
 static void dmaErrorHwi(uintptr_t arg)
 {
-    DebugP_log1("DMA error code: %d\n", MAP_DMA_getErrorStatus());
+    int status = MAP_DMA_getErrorStatus();
     MAP_DMA_clearErrorStatus();
-    DebugP_log0("DMA error!!\n");
-    while(1);
+
+    /* Suppress unused variable warning */
+    (void)status;
+
+    while (1);
 }
 
-/*
- *  ======== Board_initDMA ========
- */
-void Board_initDMA(void)
-{
-    HwiP_Params hwiParams;
-    HwiP_Handle dmaErrorHwiHandle;
+UDMAMSP432_Object udmaMSP432Object;
 
-    if (!dmaInitialized) {
-        HwiP_Params_init(&hwiParams);
-        dmaErrorHwiHandle = HwiP_create(INT_DMA_ERR, dmaErrorHwi, &hwiParams);
-        if (dmaErrorHwiHandle == NULL) {
-            DebugP_log0("Failed to create DMA error Hwi!!\n");
-            while (1);
-        }
+const UDMAMSP432_HWAttrs udmaMSP432HWAttrs = {
+    .controlBaseAddr = (void *)dmaControlTable,
+    .dmaErrorFxn = (UDMAMSP432_ErrorFxn)dmaErrorHwi,
+    .intNum = INT_DMA_ERR,
+    .intPriority = (~0)
+};
 
-        MAP_DMA_enableModule();
-        MAP_DMA_setControlBase(dmaControlTable);
-
-        dmaInitialized = true;
-    }
-}
+const UDMAMSP432_Config UDMAMSP432_config = {
+    .object = &udmaMSP432Object,
+    .hwAttrs = &udmaMSP432HWAttrs
+};
 
 /*
  *  =============================== General ===============================
@@ -457,12 +455,13 @@ I2C_Handle Board_openI2C(UInt i2cPortIndex, I2C_Params *i2cParams)
 #include <ti/drivers/Power.h>
 #include <ti/drivers/power/PowerMSP432.h>
 
-const PowerMSP432_Config PowerMSP432_config = {
+const PowerMSP432_ConfigV1 PowerMSP432_config = {
     .policyInitFxn = PowerMSP432_initPolicy,
-    .policyFxn = PowerMSP432_sleepPolicy,
+    .policyFxn = PowerMSP432_deepSleepPolicy,
     .initialPerfLevel = 2,
-    .enablePolicy = false,
-    .enablePerf = true
+    .enablePolicy = true,
+    .enablePerf = true,
+    .enableParking = true
 };
 
 /*
@@ -471,7 +470,6 @@ const PowerMSP432_Config PowerMSP432_config = {
 void Board_initPower(void)
 {
     Power_init();
-    Power_enablePolicy();
 }
 
 /*
@@ -489,56 +487,104 @@ void Board_initPower(void)
 PWMTimerMSP432_Object pwmTimerMSP432Objects[Board_PWMCOUNT];
 
 /* PWM configuration structure */
-const PWMTimerMSP432_HWAttrs pwmTimerMSP432HWAttrs[Board_PWMCOUNT] = {
+PWMTimerMSP432_HWAttrsV1 pwmTimerMSP432HWAttrs[Board_PWMCOUNT] = {
     /* pin mappable PWM channels */
     {
-        .baseAddr = TIMER_A0_BASE,
-        .compareRegister = TIMER_A_CAPTURECOMPARE_REGISTER_1
+        .timerBaseAddr = TIMER_A0_BASE,
+        .clockSource = TIMER_A_CLOCKSOURCE_SMCLK,
+        .compareRegister = TIMER_A_CAPTURECOMPARE_REGISTER_1,
+        .gpioPort = GPIO_PORT_P2,
+        .gpioPinIndex = GPIO_PIN1,
+        .pwmMode = GPIO_PRIMARY_MODULE_FUNCTION
     },
     {
-        .baseAddr = TIMER_A0_BASE,
-        .compareRegister = TIMER_A_CAPTURECOMPARE_REGISTER_2
+        .timerBaseAddr = TIMER_A0_BASE,
+        .clockSource = TIMER_A_CLOCKSOURCE_SMCLK,
+        .compareRegister = TIMER_A_CAPTURECOMPARE_REGISTER_2,
+        .gpioPort = GPIO_PORT_P2,
+        .gpioPinIndex = GPIO_PIN1,
+        .pwmMode = GPIO_PRIMARY_MODULE_FUNCTION
     },
     {
-        .baseAddr = TIMER_A0_BASE,
-        .compareRegister = TIMER_A_CAPTURECOMPARE_REGISTER_3
+        .timerBaseAddr = TIMER_A0_BASE,
+        .clockSource = TIMER_A_CLOCKSOURCE_SMCLK,
+        .compareRegister = TIMER_A_CAPTURECOMPARE_REGISTER_3,
+        .gpioPort = GPIO_PORT_P2,
+        .gpioPinIndex = GPIO_PIN1,
+        .pwmMode = GPIO_PRIMARY_MODULE_FUNCTION
     },
     {
-        .baseAddr = TIMER_A0_BASE,
-        .compareRegister = TIMER_A_CAPTURECOMPARE_REGISTER_4
+        .timerBaseAddr = TIMER_A0_BASE,
+        .clockSource = TIMER_A_CLOCKSOURCE_SMCLK,
+        .compareRegister = TIMER_A_CAPTURECOMPARE_REGISTER_4,
+        .gpioPort = GPIO_PORT_P2,
+        .gpioPinIndex = GPIO_PIN1,
+        .pwmMode = GPIO_PRIMARY_MODULE_FUNCTION
     },
     {
-        .baseAddr = TIMER_A1_BASE,
-        .compareRegister = TIMER_A_CAPTURECOMPARE_REGISTER_1
+        .timerBaseAddr = TIMER_A1_BASE,
+        .clockSource = TIMER_A_CLOCKSOURCE_SMCLK,
+        .compareRegister = TIMER_A_CAPTURECOMPARE_REGISTER_1,
+        .gpioPort = GPIO_PORT_P2,
+        .gpioPinIndex = GPIO_PIN1,
+        .pwmMode = GPIO_PRIMARY_MODULE_FUNCTION
     },
     {
-        .baseAddr = TIMER_A1_BASE,
-        .compareRegister = TIMER_A_CAPTURECOMPARE_REGISTER_2
+        .timerBaseAddr = TIMER_A1_BASE,
+        .clockSource = TIMER_A_CLOCKSOURCE_SMCLK,
+        .compareRegister = TIMER_A_CAPTURECOMPARE_REGISTER_2,
+        .gpioPort = GPIO_PORT_P2,
+        .gpioPinIndex = GPIO_PIN1,
+        .pwmMode = GPIO_PRIMARY_MODULE_FUNCTION
     },
     {
-        .baseAddr = TIMER_A1_BASE,
-        .compareRegister = TIMER_A_CAPTURECOMPARE_REGISTER_3
+        .timerBaseAddr = TIMER_A1_BASE,
+        .clockSource = TIMER_A_CLOCKSOURCE_SMCLK,
+        .compareRegister = TIMER_A_CAPTURECOMPARE_REGISTER_3,
+        .gpioPort = GPIO_PORT_P2,
+        .gpioPinIndex = GPIO_PIN1,
+        .pwmMode = GPIO_PRIMARY_MODULE_FUNCTION
     },
     {
-        .baseAddr = TIMER_A1_BASE,
-        .compareRegister = TIMER_A_CAPTURECOMPARE_REGISTER_4
+        .timerBaseAddr = TIMER_A1_BASE,
+        .clockSource = TIMER_A_CLOCKSOURCE_SMCLK,
+        .compareRegister = TIMER_A_CAPTURECOMPARE_REGISTER_4,
+        .gpioPort = GPIO_PORT_P2,
+        .gpioPinIndex = GPIO_PIN1,
+        .pwmMode = GPIO_PRIMARY_MODULE_FUNCTION
     },
 	/* fixed pin mapped PWM channels */
     {
-        .baseAddr = TIMER_A2_BASE,
-        .compareRegister = TIMER_A_CAPTURECOMPARE_REGISTER_1
+        .timerBaseAddr = TIMER_A2_BASE,
+        .clockSource = TIMER_A_CLOCKSOURCE_SMCLK,
+        .compareRegister = TIMER_A_CAPTURECOMPARE_REGISTER_1,
+        .gpioPort = GPIO_PORT_P2,
+        .gpioPinIndex = GPIO_PIN1,
+        .pwmMode = GPIO_PRIMARY_MODULE_FUNCTION
     },
     {
-        .baseAddr = TIMER_A2_BASE,
-        .compareRegister = TIMER_A_CAPTURECOMPARE_REGISTER_2
+        .timerBaseAddr = TIMER_A2_BASE,
+        .clockSource = TIMER_A_CLOCKSOURCE_SMCLK,
+        .compareRegister = TIMER_A_CAPTURECOMPARE_REGISTER_2,
+        .gpioPort = GPIO_PORT_P2,
+        .gpioPinIndex = GPIO_PIN1,
+        .pwmMode = GPIO_PRIMARY_MODULE_FUNCTION
     },
     {
-        .baseAddr = TIMER_A2_BASE,
-        .compareRegister = TIMER_A_CAPTURECOMPARE_REGISTER_3
+        .timerBaseAddr = TIMER_A2_BASE,
+        .clockSource = TIMER_A_CLOCKSOURCE_SMCLK,
+        .compareRegister = TIMER_A_CAPTURECOMPARE_REGISTER_3,
+        .gpioPort = GPIO_PORT_P2,
+        .gpioPinIndex = GPIO_PIN1,
+        .pwmMode = GPIO_PRIMARY_MODULE_FUNCTION
     },
     {
-        .baseAddr = TIMER_A2_BASE,
-        .compareRegister = TIMER_A_CAPTURECOMPARE_REGISTER_4
+        .timerBaseAddr = TIMER_A2_BASE,
+        .clockSource = TIMER_A_CLOCKSOURCE_SMCLK,
+        .compareRegister = TIMER_A_CAPTURECOMPARE_REGISTER_4,
+        .gpioPort = GPIO_PORT_P2,
+        .gpioPinIndex = GPIO_PIN1,
+        .pwmMode = GPIO_PRIMARY_MODULE_FUNCTION
     }
 };
 
@@ -764,8 +810,6 @@ SPI_Handle Board_openSPI(UInt spiPortIndex, SPI_Params *spiParams)
             return(NULL);
     }
     
-    Board_initDMA();
-
     /* open the SPI port */
     return (SPI_open(spiPortIndex, spiParams));
 }
@@ -1010,7 +1054,6 @@ void Board_initWiFi(void)
                                  GPIO_LOW_TO_HIGH_TRANSITION);
 
     /* Initialize SPI and WiFi drivers */
-    Board_initDMA();
     SPI_init();
     WiFi_init();
 }

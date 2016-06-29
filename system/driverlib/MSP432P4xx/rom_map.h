@@ -1,10 +1,10 @@
 /*
  * -------------------------------------------
- *    MSP432 DriverLib - v3_10_00_09 
+ *    MSP432 DriverLib - v3_21_00_05 
  * -------------------------------------------
  *
  * --COPYRIGHT--,BSD,BSD
- * Copyright (c) 2014, Texas Instruments Incorporated
+ * Copyright (c) 2016, Texas Instruments Incorporated
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -34,17 +34,6 @@
  * OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE,
  * EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  * --/COPYRIGHT--*/
-//*****************************************************************************
-//
-// rom_map.h - Macros to facilitate calling functions in the ROM when they are
-//             available and in flash otherwise.
-//
-// Copyright (c) 2013 Texas Instruments Incorporated.  All rights reserved.
-// TI Information - Selective Disclosure
-//
-//
-//*****************************************************************************
-
 #ifndef __ROM_MAP_H__
 #define __ROM_MAP_H__
 
@@ -1083,6 +1072,13 @@
 // Macros for the Flash API.
 //
 //*****************************************************************************
+#ifdef ROM_FlashCtl_enableReadParityCheck
+#define MAP_FlashCtl_enableReadParityCheck                                    \
+        ROM_FlashCtl_enableReadParityCheck
+#else
+#define MAP_FlashCtl_enableReadParityCheck                                    \
+        FlashCtl_enableReadParityCheck
+#endif
 #ifdef ROM_FlashCtl_disableReadParityCheck
 #define MAP_FlashCtl_disableReadParityCheck                                   \
         ROM_FlashCtl_disableReadParityCheck
@@ -2314,6 +2310,20 @@
 #define MAP_PSS_disableHighSide                                               \
         PSS_disableHighSide
 #endif
+#ifdef ROM_PSS_enableLowSide
+#define MAP_PSS_enableLowSide                                                 \
+        ROM_PSS_enableLowSide
+#else
+#define MAP_PSS_enableLowSide                                                 \
+        PSS_enableLowSide
+#endif
+#ifdef ROM_PSS_disableLowSide
+#define MAP_PSS_disableLowSide                                                \
+        ROM_PSS_disableLowSide
+#else
+#define MAP_PSS_disableLowSide                                                \
+        PSS_disableLowSide
+#endif
 #ifdef ROM_PSS_setHighSidePerformanceMode
 #define MAP_PSS_setHighSidePerformanceMode                                    \
         ROM_PSS_setHighSidePerformanceMode
@@ -2327,6 +2337,20 @@
 #else
 #define MAP_PSS_getHighSidePerformanceMode                                    \
         PSS_getHighSidePerformanceMode
+#endif
+#ifdef ROM_PSS_setLowSidePerformanceMode
+#define MAP_PSS_setLowSidePerformanceMode                                     \
+        ROM_PSS_setLowSidePerformanceMode
+#else
+#define MAP_PSS_setLowSidePerformanceMode                                     \
+        PSS_setLowSidePerformanceMode
+#endif
+#ifdef ROM_PSS_getLowSidePerformanceMode
+#define MAP_PSS_getLowSidePerformanceMode                                     \
+        ROM_PSS_getLowSidePerformanceMode
+#else
+#define MAP_PSS_getLowSidePerformanceMode                                     \
+        PSS_getLowSidePerformanceMode
 #endif
 #ifdef ROM_PSS_enableHighSideMonitor
 #define MAP_PSS_enableHighSideMonitor                                         \

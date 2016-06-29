@@ -1,10 +1,10 @@
 /*
  * -------------------------------------------
- *    MSP432 DriverLib - v3_10_00_09 
+ *    MSP432 DriverLib - v3_21_00_05 
  * -------------------------------------------
  *
  * --COPYRIGHT--,BSD,BSD
- * Copyright (c) 2014, Texas Instruments Incorporated
+ * Copyright (c) 2016, Texas Instruments Incorporated
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -723,14 +723,14 @@ bool FlashCtl_setReadMode(uint32_t flashBank, uint32_t readMode)
         FLCTL->BANK0_RDCTL = (FLCTL->BANK0_RDCTL
                 & ~FLCTL_BANK0_RDCTL_RD_MODE_MASK) | readMode;
         while ((FLCTL->BANK0_RDCTL & FLCTL_BANK0_RDCTL_RD_MODE_MASK)
-        		!= readMode)
+                != readMode)
             ;
     } else if (flashBank == FLASH_BANK1)
     {
         FLCTL->BANK1_RDCTL = (FLCTL->BANK1_RDCTL
                 & ~FLCTL_BANK1_RDCTL_RD_MODE_MASK) | readMode;
         while ((FLCTL->BANK1_RDCTL & FLCTL_BANK1_RDCTL_RD_MODE_MASK)
-        		!= readMode)
+                != readMode)
             ;
     } else
     {

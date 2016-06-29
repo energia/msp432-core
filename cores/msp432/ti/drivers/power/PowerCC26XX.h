@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2015, Texas Instruments Incorporated
+ * Copyright (c) 2015-2016, Texas Instruments Incorporated
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -272,6 +272,7 @@ typedef struct PowerCC26XX_ModuleState {
     uint8_t constraintCounts[PowerCC26XX_NUMCONSTRAINTS];
     uint8_t resourceCounts[PowerCC26XX_NUMRESOURCES];
     unsigned int (*resourceHandlers[3])(unsigned int);
+    Power_PolicyFxn policyFxn;
 } PowerCC26XX_ModuleState;
 
 /*!

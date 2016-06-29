@@ -1,10 +1,10 @@
 /*
  * -------------------------------------------
- *    MSP432 DriverLib - v3_10_00_09 
+ *    MSP432 DriverLib - v3_21_00_05 
  * -------------------------------------------
  *
  * --COPYRIGHT--,BSD,BSD
- * Copyright (c) 2014, Texas Instruments Incorporated
+ * Copyright (c) 2016, Texas Instruments Incorporated
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -59,7 +59,7 @@ void CRC32_set8BitData(uint8_t dataIn, uint_fast8_t crcType)
     if (CRC16_MODE == crcType)
         HWREG8(&(CRC32->DI16)) = dataIn;
     else
-    	HWREG8(&(CRC32->DI32)) = dataIn;
+        HWREG8(&(CRC32->DI32)) = dataIn;
 }
 
 void CRC32_set16BitData(uint16_t dataIn, uint_fast8_t crcType)
@@ -89,7 +89,7 @@ void CRC32_set8BitDataReversed(uint8_t dataIn, uint_fast8_t crcType)
     if (CRC16_MODE == crcType)
         HWREG8(&(CRC32->DIRB16)) = dataIn;
     else
-    	HWREG8(&(CRC32->DIRB32)) = dataIn;
+        HWREG8(&(CRC32->DIRB32)) = dataIn;
 }
 
 void CRC32_set16BitDataReversed(uint16_t dataIn, uint_fast8_t crcType)

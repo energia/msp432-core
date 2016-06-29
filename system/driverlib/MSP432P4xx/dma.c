@@ -1,10 +1,10 @@
 /*
  * -------------------------------------------
- *    MSP432 DriverLib - v3_10_00_09 
+ *    MSP432 DriverLib - v3_21_00_05 
  * -------------------------------------------
  *
  * --COPYRIGHT--,BSD,BSD
- * Copyright (c) 2014, Texas Instruments Incorporated
+ * Copyright (c) 2016, Texas Instruments Incorporated
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -45,7 +45,7 @@ void DMA_enableModule(void)
     //
     // Set the master enable bit in the config register.
     //
-	DMA_Control->CFG = DMA_CFG_MASTEN;
+    DMA_Control->CFG = DMA_CFG_MASTEN;
 }
 
 void DMA_disableModule(void)
@@ -53,7 +53,7 @@ void DMA_disableModule(void)
     //
     // Clear the master enable bit in the config register.
     //
-	DMA_Control->CFG = 0;
+    DMA_Control->CFG = 0;
 }
 
 uint32_t DMA_getErrorStatus(void)
@@ -69,7 +69,7 @@ void DMA_clearErrorStatus(void)
     //
     // Clear the DMA error interrupt.
     //
-	DMA_Control->ERRCLR = 1;
+    DMA_Control->ERRCLR = 1;
 }
 
 void DMA_enableChannel(uint32_t channelNum)
@@ -181,7 +181,7 @@ void DMA_enableChannelAttribute(uint32_t channelNum, uint32_t attr)
     //
     if (attr & UDMA_ATTR_USEBURST)
     {
-    	DMA_Control->USEBURSTSET = 1 << channelNum;
+        DMA_Control->USEBURSTSET = 1 << channelNum;
     }
 
     //
@@ -190,7 +190,7 @@ void DMA_enableChannelAttribute(uint32_t channelNum, uint32_t attr)
     //
     if (attr & UDMA_ATTR_ALTSELECT)
     {
-    	DMA_Control->ALTSET = 1 << channelNum;
+        DMA_Control->ALTSET = 1 << channelNum;
     }
 
     //
@@ -198,7 +198,7 @@ void DMA_enableChannelAttribute(uint32_t channelNum, uint32_t attr)
     //
     if (attr & UDMA_ATTR_HIGH_PRIORITY)
     {
-    	DMA_Control->PRIOSET = 1 << channelNum;
+        DMA_Control->PRIOSET = 1 << channelNum;
     }
 
     //
@@ -206,7 +206,7 @@ void DMA_enableChannelAttribute(uint32_t channelNum, uint32_t attr)
     //
     if (attr & UDMA_ATTR_REQMASK)
     {
-    	DMA_Control->REQMASKSET = 1 << channelNum;
+        DMA_Control->REQMASKSET = 1 << channelNum;
     }
 }
 
@@ -234,7 +234,7 @@ void DMA_disableChannelAttribute(uint32_t channelNum, uint32_t attr)
     //
     if (attr & UDMA_ATTR_USEBURST)
     {
-    	DMA_Control->USEBURSTCLR = 1 << channelNum;
+        DMA_Control->USEBURSTCLR = 1 << channelNum;
     }
 
     //
@@ -243,7 +243,7 @@ void DMA_disableChannelAttribute(uint32_t channelNum, uint32_t attr)
     //
     if (attr & UDMA_ATTR_ALTSELECT)
     {
-    	DMA_Control->ALTCLR = 1 << channelNum;
+        DMA_Control->ALTCLR = 1 << channelNum;
     }
 
     //
@@ -251,7 +251,7 @@ void DMA_disableChannelAttribute(uint32_t channelNum, uint32_t attr)
     //
     if (attr & UDMA_ATTR_HIGH_PRIORITY)
     {
-    	DMA_Control->PRIOCLR = 1 << channelNum;
+        DMA_Control->PRIOCLR = 1 << channelNum;
     }
 
     //
@@ -259,7 +259,7 @@ void DMA_disableChannelAttribute(uint32_t channelNum, uint32_t attr)
     //
     if (attr & UDMA_ATTR_REQMASK)
     {
-    	DMA_Control->REQMASKCLR = 1 << channelNum;
+        DMA_Control->REQMASKCLR = 1 << channelNum;
     }
 }
 
@@ -649,7 +649,7 @@ void DMA_assignChannel(uint32_t mapping)
     case DMA_CH0_EUSCIB1TX3:
     case DMA_CH0_TIMERA0CCR0:
     case DMA_CH0_AESTRIGGER0:
-    	DMA_Channel->CH_SRCCFG[0] = (mapping >> 24) & 0x1F;
+        DMA_Channel->CH_SRCCFG[0] = (mapping >> 24) & 0x1F;
         break;
     case DMA_CH1_RESERVED0:
     case DMA_CH1_EUSCIA0RX:
@@ -659,7 +659,7 @@ void DMA_assignChannel(uint32_t mapping)
     case DMA_CH1_EUSCIB1RX3:
     case DMA_CH1_TIMERA0CCR2:
     case DMA_CH1_AESTRIGGER1:
-    	DMA_Channel->CH_SRCCFG[1] = (mapping >> 24) & 0x1F;
+        DMA_Channel->CH_SRCCFG[1] = (mapping >> 24) & 0x1F;
         break;
     case DMA_CH2_RESERVED0:
     case DMA_CH2_EUSCIA1TX:
@@ -669,7 +669,7 @@ void DMA_assignChannel(uint32_t mapping)
     case DMA_CH2_EUSCIB2TX3:
     case DMA_CH2_TIMERA1CCR0:
     case DMA_CH2_AESTRIGGER2:
-    	DMA_Channel->CH_SRCCFG[2] = (mapping >> 24) & 0x1F;
+        DMA_Channel->CH_SRCCFG[2] = (mapping >> 24) & 0x1F;
         break;
     case DMA_CH3_RESERVED0:
     case DMA_CH3_EUSCIA1RX:
@@ -679,7 +679,7 @@ void DMA_assignChannel(uint32_t mapping)
     case DMA_CH3_EUSCIB2RX3:
     case DMA_CH3_TIMERA1CCR2:
     case DMA_CH3_RESERVED1:
-    	DMA_Channel->CH_SRCCFG[3] = (mapping >> 24) & 0x1F;
+        DMA_Channel->CH_SRCCFG[3] = (mapping >> 24) & 0x1F;
         break;
     case DMA_CH4_RESERVED0:
     case DMA_CH4_EUSCIA2TX:
@@ -689,7 +689,7 @@ void DMA_assignChannel(uint32_t mapping)
     case DMA_CH4_EUSCIB3TX3:
     case DMA_CH4_TIMERA2CCR0:
     case DMA_CH4_RESERVED1:
-    	DMA_Channel->CH_SRCCFG[4] = (mapping >> 24) & 0x1F;
+        DMA_Channel->CH_SRCCFG[4] = (mapping >> 24) & 0x1F;
         break;
     case DMA_CH5_RESERVED0:
     case DMA_CH5_EUSCIA2RX:
@@ -699,7 +699,7 @@ void DMA_assignChannel(uint32_t mapping)
     case DMA_CH5_EUSCIB3RX3:
     case DMA_CH5_TIMERA2CCR2:
     case DMA_CH5_RESERVED1:
-    	DMA_Channel->CH_SRCCFG[5] = (mapping >> 24) & 0x1F;
+        DMA_Channel->CH_SRCCFG[5] = (mapping >> 24) & 0x1F;
         break;
     case DMA_CH6_RESERVED0:
     case DMA_CH6_EUSCIA3TX:
@@ -709,7 +709,7 @@ void DMA_assignChannel(uint32_t mapping)
     case DMA_CH6_EUSCIB0TX3:
     case DMA_CH6_TIMERA3CCR0:
     case DMA_CH6_EXTERNALPIN:
-    	DMA_Channel->CH_SRCCFG[6] = (mapping >> 24) & 0x1F;
+        DMA_Channel->CH_SRCCFG[6] = (mapping >> 24) & 0x1F;
         break;
     case DMA_CH7_RESERVED0:
     case DMA_CH7_EUSCIA3RX:
@@ -719,7 +719,7 @@ void DMA_assignChannel(uint32_t mapping)
     case DMA_CH7_EUSCIB0RX3:
     case DMA_CH7_TIMERA3CCR2:
     case DMA_CH7_ADC14:
-    	DMA_Channel->CH_SRCCFG[7] = (mapping >> 24) & 0x1F;
+        DMA_Channel->CH_SRCCFG[7] = (mapping >> 24) & 0x1F;
         break;
     default:
         ASSERT(false);
@@ -735,16 +735,16 @@ void DMA_assignInterrupt(uint32_t interruptNumber, uint32_t channel)
 
     if (interruptNumber == DMA_INT1)
     {
-    	DMA_Channel->INT1_SRCCFG = (DMA_Channel->INT1_SRCCFG
-    			& ~DMA_INT1_SRCCFG_INT_SRC_MASK) | channel;
+        DMA_Channel->INT1_SRCCFG = (DMA_Channel->INT1_SRCCFG
+                & ~DMA_INT1_SRCCFG_INT_SRC_MASK) | channel;
     } else if (interruptNumber == DMA_INT2)
     {
-    	DMA_Channel->INT2_SRCCFG = (DMA_Channel->INT2_SRCCFG
-    			& ~DMA_INT1_SRCCFG_INT_SRC_MASK) | channel;
+        DMA_Channel->INT2_SRCCFG = (DMA_Channel->INT2_SRCCFG
+                & ~DMA_INT1_SRCCFG_INT_SRC_MASK) | channel;
     } else if (interruptNumber == DMA_INT3)
     {
-    	DMA_Channel->INT3_SRCCFG = (DMA_Channel->INT3_SRCCFG
-    			& ~DMA_INT1_SRCCFG_INT_SRC_MASK) | channel;
+        DMA_Channel->INT3_SRCCFG = (DMA_Channel->INT3_SRCCFG
+                & ~DMA_INT1_SRCCFG_INT_SRC_MASK) | channel;
     }
 
     /* Enabling the assigned interrupt */
@@ -753,7 +753,7 @@ void DMA_assignInterrupt(uint32_t interruptNumber, uint32_t channel)
 
 void DMA_requestSoftwareTransfer(uint32_t channel)
 {
-	DMA_Channel->SW_CHTRIG |= (1 << channel);
+    DMA_Channel->SW_CHTRIG |= (1 << channel);
 }
 
 uint32_t DMA_getInterruptStatus(void)
@@ -763,7 +763,7 @@ uint32_t DMA_getInterruptStatus(void)
 
 void DMA_clearInterruptFlag(uint32_t channel)
 {
-	DMA_Channel->INT0_CLRFLG |= (1 << channel);
+    DMA_Channel->INT0_CLRFLG |= (1 << channel);
 }
 
 void DMA_enableInterrupt(uint32_t interruptNumber)
@@ -775,13 +775,13 @@ void DMA_enableInterrupt(uint32_t interruptNumber)
 
     if (interruptNumber == DMA_INT1)
     {
-    	DMA_Channel->INT1_SRCCFG |= DMA_INT1_SRCCFG_EN;
+        DMA_Channel->INT1_SRCCFG |= DMA_INT1_SRCCFG_EN;
     } else if (interruptNumber == DMA_INT2)
     {
-    	DMA_Channel->INT2_SRCCFG |= DMA_INT2_SRCCFG_EN;
+        DMA_Channel->INT2_SRCCFG |= DMA_INT2_SRCCFG_EN;
     } else if (interruptNumber == DMA_INT3)
     {
-    	DMA_Channel->INT3_SRCCFG |= DMA_INT3_SRCCFG_EN;
+        DMA_Channel->INT3_SRCCFG |= DMA_INT3_SRCCFG_EN;
     }
 
 }
@@ -795,13 +795,13 @@ void DMA_disableInterrupt(uint32_t interruptNumber)
 
     if (interruptNumber == DMA_INT1)
     {
-    	DMA_Channel->INT1_SRCCFG &= ~DMA_INT1_SRCCFG_EN;
+        DMA_Channel->INT1_SRCCFG &= ~DMA_INT1_SRCCFG_EN;
     } else if (interruptNumber == DMA_INT2)
     {
-    	DMA_Channel->INT2_SRCCFG &= ~DMA_INT2_SRCCFG_EN;
+        DMA_Channel->INT2_SRCCFG &= ~DMA_INT2_SRCCFG_EN;
     } else if (interruptNumber == DMA_INT3)
     {
-    	DMA_Channel->INT3_SRCCFG &= ~DMA_INT3_SRCCFG_EN;
+        DMA_Channel->INT3_SRCCFG &= ~DMA_INT3_SRCCFG_EN;
     }
 }
 

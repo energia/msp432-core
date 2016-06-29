@@ -77,6 +77,7 @@ struct ti_sysbios_interfaces_ITaskSupport_Fxns__ {
     xdc_SizeT (*stackUsed)(xdc_Char*, xdc_SizeT);
     xdc_UInt (*getStackAlignment)(void);
     xdc_SizeT (*getDefaultStackSize)(void);
+    xdc_Ptr (*getCheckValueAddr)(xdc_Ptr);
     xdc_runtime_Types_SysFxns2 __sfxns;
 };
 
@@ -128,6 +129,12 @@ static inline xdc_UInt ti_sysbios_interfaces_ITaskSupport_getStackAlignment( ti_
 static inline xdc_SizeT ti_sysbios_interfaces_ITaskSupport_getDefaultStackSize( ti_sysbios_interfaces_ITaskSupport_Module __inst )
 {
     return __inst->getDefaultStackSize();
+}
+
+/* getCheckValueAddr */
+static inline xdc_Ptr ti_sysbios_interfaces_ITaskSupport_getCheckValueAddr( ti_sysbios_interfaces_ITaskSupport_Module __inst, xdc_Ptr curTask )
+{
+    return __inst->getCheckValueAddr(curTask);
 }
 
 
@@ -184,6 +191,13 @@ static inline ti_sysbios_interfaces_ITaskSupport_getDefaultStackSize_FxnT ti_sys
     return (ti_sysbios_interfaces_ITaskSupport_getDefaultStackSize_FxnT)__inst->getDefaultStackSize;
 }
 
+/* getCheckValueAddr_{FxnT,fxnP} */
+typedef xdc_Ptr (*ti_sysbios_interfaces_ITaskSupport_getCheckValueAddr_FxnT)(xdc_Ptr);
+static inline ti_sysbios_interfaces_ITaskSupport_getCheckValueAddr_FxnT ti_sysbios_interfaces_ITaskSupport_getCheckValueAddr_fxnP( ti_sysbios_interfaces_ITaskSupport_Module __inst )
+{
+    return (ti_sysbios_interfaces_ITaskSupport_getCheckValueAddr_FxnT)__inst->getCheckValueAddr;
+}
+
 
 /*
  * ======== EPILOGUE ========
@@ -226,6 +240,9 @@ static inline ti_sysbios_interfaces_ITaskSupport_getDefaultStackSize_FxnT ti_sys
 #define ITaskSupport_getDefaultStackSize ti_sysbios_interfaces_ITaskSupport_getDefaultStackSize
 #define ITaskSupport_getDefaultStackSize_fxnP ti_sysbios_interfaces_ITaskSupport_getDefaultStackSize_fxnP
 #define ITaskSupport_getDefaultStackSize_FxnT ti_sysbios_interfaces_ITaskSupport_getDefaultStackSize_FxnT
+#define ITaskSupport_getCheckValueAddr ti_sysbios_interfaces_ITaskSupport_getCheckValueAddr
+#define ITaskSupport_getCheckValueAddr_fxnP ti_sysbios_interfaces_ITaskSupport_getCheckValueAddr_fxnP
+#define ITaskSupport_getCheckValueAddr_FxnT ti_sysbios_interfaces_ITaskSupport_getCheckValueAddr_FxnT
 #define ITaskSupport_Module_name ti_sysbios_interfaces_ITaskSupport_Module_name
 
 #endif /* ti_sysbios_interfaces_ITaskSupport__localnames__done */

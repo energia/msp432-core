@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2015, Texas Instruments Incorporated
+ * Copyright (c) 2015-2016, Texas Instruments Incorporated
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -360,7 +360,7 @@ typedef struct GPIOTiva_Config {
 #define GPIOTiva_PT_2      0x0F04
 #define GPIOTiva_PT_3      0x0F08
 
-#else /* defined(MWARE) */
+#elif defined(MWARE)
 #define GPIOTiva_PP_0      0x0D01
 #define GPIOTiva_PP_1      0x0D02
 #define GPIOTiva_PP_2      0x0D04
@@ -396,6 +396,9 @@ typedef struct GPIOTiva_Config {
 #define GPIOTiva_PS_5      0x1020
 #define GPIOTiva_PS_6      0x1040
 #define GPIOTiva_PS_7      0x1080
+
+#else
+    #error "Either TIVAWARE or MWARE must be defined"
 #endif
 
 #ifdef __cplusplus

@@ -21,6 +21,10 @@
 #define xdc_FILE__ xdc_FILE
 #endif
 
+/* linkedWithIncorrectBootLibrary */
+#undef ti_sysbios_BIOS_linkedWithIncorrectBootLibrary
+#define ti_sysbios_BIOS_linkedWithIncorrectBootLibrary ti_sysbios_BIOS_linkedWithIncorrectBootLibrary__E
+
 /* start */
 #undef ti_sysbios_BIOS_start
 #define ti_sysbios_BIOS_start ti_sysbios_BIOS_start__E

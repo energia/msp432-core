@@ -178,6 +178,18 @@
 /* processVitalTaskFlag */
 #define Task_processVitalTaskFlag ti_sysbios_knl_Task_processVitalTaskFlag__I
 
+/* moduleStateCheck */
+#define Task_moduleStateCheck ti_sysbios_knl_Task_moduleStateCheck__I
+
+/* getModuleStateCheckValue */
+#define Task_getModuleStateCheckValue ti_sysbios_knl_Task_getModuleStateCheckValue__I
+
+/* objectCheck */
+#define Task_objectCheck ti_sysbios_knl_Task_objectCheck__I
+
+/* getObjectCheckValue */
+#define Task_getObjectCheckValue ti_sysbios_knl_Task_getObjectCheckValue__I
+
 /* Module_startup */
 #undef ti_sysbios_knl_Task_Module_startup
 #define ti_sysbios_knl_Task_Module_startup ti_sysbios_knl_Task_Module_startup__E

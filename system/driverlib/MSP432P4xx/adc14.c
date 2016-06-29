@@ -1,10 +1,10 @@
 /*
  * -------------------------------------------
- *    MSP432 DriverLib - v3_10_00_09 
+ *    MSP432 DriverLib - v3_21_00_05 
  * -------------------------------------------
  *
  * --COPYRIGHT--,BSD,BSD
- * Copyright (c) 2014, Texas Instruments Incorporated
+ * Copyright (c) 2016, Texas Instruments Incorporated
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -599,7 +599,7 @@ void ADC14_getMultiSequenceResult(uint16_t* res)
 
     for (ii = 0; ii < 32; ii++)
     {
-        res[ii] = *(((uint16_t*) curAddr) + 0x40);
+        res[ii] = *((uint16_t*)(curAddr + 32));
 
         if (BITBAND_PERI((*curAddr), ADC14_MCTLN_EOS_OFS))
             break;
@@ -607,7 +607,7 @@ void ADC14_getMultiSequenceResult(uint16_t* res)
         if (curAddr == _ctlRegs[31])
             curAddr = (uint32_t*) _ctlRegs[0];
         else
-            curAddr += 0x04;
+            curAddr++;
     }
 
 }

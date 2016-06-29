@@ -1,10 +1,10 @@
 /*
  * -------------------------------------------
- *    MSP432 DriverLib - v3_10_00_09 
+ *    MSP432 DriverLib - v3_21_00_05 
  * -------------------------------------------
  *
  * --COPYRIGHT--,BSD,BSD
- * Copyright (c) 2014, Texas Instruments Incorporated
+ * Copyright (c) 2016, Texas Instruments Incorporated
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -532,7 +532,7 @@ void CS_setDCOExternalResistorCalibration(uint_fast8_t calData,
 
     if( (freqRange == CS_OVER32MHZ) && ( TLV->HWREV > DEVICE_PG1_1))
     {
-    	CS->DCOERCAL1 &= ~CS_DCOERCAL1_DCO_FCAL_RSEL5_MASK;
+        CS->DCOERCAL1 &= ~CS_DCOERCAL1_DCO_FCAL_RSEL5_MASK;
         CS->DCOERCAL1 |= (calData);
     }
     else
@@ -586,19 +586,19 @@ void CS_tuneDCOFrequency(int16_t tuneParameter)
     uint16_t dcoTuneSigned = 0x1000;
 
     if (TLV->HWREV > DEVICE_PG1_1) {
-    	dcoTuneMask = 0x3FF;
-    	dcoTuneSigned = 0x200;
+        dcoTuneMask = 0x3FF;
+        dcoTuneSigned = 0x200;
     }
 
     if (tuneParameter < 0)
     {
-    	CS->CTL0 = ((CS->CTL0 & ~dcoTuneMask) | (tuneParameter
-            		& dcoTuneMask) | dcoTuneSigned);
+        CS->CTL0 = ((CS->CTL0 & ~dcoTuneMask) | (tuneParameter
+                    & dcoTuneMask) | dcoTuneSigned);
     } 
     else
     {
-		CS->CTL0 = ((CS->CTL0 & ~dcoTuneMask) | (tuneParameter
-					& dcoTuneMask));
+        CS->CTL0 = ((CS->CTL0 & ~dcoTuneMask) | (tuneParameter
+                    & dcoTuneMask));
     }
      
      BITBAND_PERI(CS->KEY, CS_KEY_KEY_OFS) = 1;
@@ -627,7 +627,7 @@ uint32_t CS_getDCOFrequency(void)
     /* Checking to see if we need to do signed conversion */
     if ( TLV->HWREV > DEVICE_PG1_1)
     {
-    	dcoTune = CS->CTL0 & 0x3FF;
+        dcoTune = CS->CTL0 & 0x3FF;
         if (dcoTune & 0x200)
         {
             dcoTune = dcoTune | 0xFE00;
@@ -635,7 +635,7 @@ uint32_t CS_getDCOFrequency(void)
     }
     else
     {
-    	dcoTune = CS->CTL0 & 0x1FFF;
+        dcoTune = CS->CTL0 & 0x1FFF;
         if (dcoTune & 0x1000)
         {
             dcoTune = dcoTune | 0xF000;

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2014-2015, Texas Instruments Incorporated
+ * Copyright (c) 2014-2016, Texas Instruments Incorporated
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -62,6 +62,7 @@ extern "C" {
 #include <ti/drivers/ports/SemaphoreP.h>
 #include <ti/drivers/Power.h>
 #include <ti/drivers/UART.h>
+#include <ti/drivers/dma/UDMACC3200.h>
 
 /**
  *  @addtogroup UART_STATUS
@@ -189,6 +190,9 @@ typedef struct UARTCC3200DMA_Object {
     ClockP_Handle        txFifoEmptyClk;   /* UART TX FIFO empty clock */
     Power_NotifyObj      postNotify;       /* LPDS wake-up notify object */
     unsigned int         powerMgrId;       /* Determined from base address */
+
+    /* UDMA */
+    UDMACC3200_Handle    dmaHandle;
 } UARTCC3200DMA_Object, *UARTCC3200DMA_Handle;
 
 #ifdef __cplusplus

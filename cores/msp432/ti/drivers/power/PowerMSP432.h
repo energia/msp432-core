@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2015, Texas Instruments Incorporated
+ * Copyright (c) 2015-2016, Texas Instruments Incorporated
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -148,13 +148,14 @@ typedef struct PowerMSP432_Freqs {
 } PowerMSP432_Freqs;
 
 /*! @brief  Power global configuration (MSP432-specific) */
-typedef struct PowerMSP432_Config {
-    Power_PolicyInitFxn policyInitFxn;    /* init function for power policy */
-    Power_PolicyFxn policyFxn;                 /* the power policy function */
-    unsigned int initialPerfLevel;             /* initial performance level */
-    bool enablePolicy; /* enables power policy function to run in idle loop */
-    bool enablePerf;                   /* enables performance level control */
-} PowerMSP432_Config;
+typedef struct PowerMSP432_ConfigV1 {
+    Power_PolicyInitFxn policyInitFxn;      /* init function for power policy */
+    Power_PolicyFxn policyFxn;                   /* the power policy function */
+    unsigned int initialPerfLevel;               /* initial performance level */
+    bool enablePolicy;   /* enables power policy function to run in idle loop */
+    bool enablePerf;                     /* enables performance level control */
+    bool enableParking; /* enables automatic pin parking during LPM3 and LPM4 */
+} PowerMSP432_ConfigV1;
 
 /*!
  *  @cond NODOC
@@ -169,6 +170,7 @@ typedef struct PowerMSP432_ModuleState {
     bool perfInitialized;
     bool initialized;
     uint8_t constraintCounts[PowerMSP432_NUMCONSTRAINTS];
+    Power_PolicyFxn policyFxn;
 } PowerMSP432_ModuleState;
 /*! @endcond */
 
@@ -177,6 +179,9 @@ void PowerMSP432_initPolicy(void);
 
 /* default power policy function for config structure */
 void PowerMSP432_sleepPolicy(void);
+
+/* more agressive power policy function using deepsleep */
+void PowerMSP432_deepSleepPolicy(void);
 
 /* OS-specific frequency update function */
 void PowerMSP432_updateFreqs(PowerMSP432_Freqs *freqs);

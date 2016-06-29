@@ -1,10 +1,10 @@
 /*
  * -------------------------------------------
- *    MSP432 DriverLib - v3_10_00_09 
+ *    MSP432 DriverLib - v3_21_00_05 
  * -------------------------------------------
  *
  * --COPYRIGHT--,BSD,BSD
- * Copyright (c) 2014, Texas Instruments Incorporated
+ * Copyright (c) 2016, Texas Instruments Incorporated
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -41,21 +41,21 @@
 
 void RTC_C_startClock(void)
 {
-	RTC_C->CTL0 = (RTC_C->CTL0 & ~RTC_C_CTL0_KEY_MASK) | RTC_C_KEY;
+    RTC_C->CTL0 = (RTC_C->CTL0 & ~RTC_C_CTL0_KEY_MASK) | RTC_C_KEY;
     BITBAND_PERI(RTC_C->CTL13, RTC_C_CTL13_HOLD_OFS) = 0;
     BITBAND_PERI(RTC_C->CTL0, RTC_C_CTL0_KEY_OFS) = 0;
 }
 
 void RTC_C_holdClock(void)
 {
-	RTC_C->CTL0 = (RTC_C->CTL0 & ~RTC_C_CTL0_KEY_MASK) | RTC_C_KEY;
+    RTC_C->CTL0 = (RTC_C->CTL0 & ~RTC_C_CTL0_KEY_MASK) | RTC_C_KEY;
     BITBAND_PERI(RTC_C->CTL13, RTC_C_CTL13_HOLD_OFS) = 1;
     BITBAND_PERI(RTC_C->CTL0, RTC_C_CTL0_KEY_OFS) = 0;
 }
 
 void RTC_C_setCalibrationFrequency(uint_fast16_t frequencySelect)
 {
-	RTC_C->CTL0 = (RTC_C->CTL0 & ~RTC_C_CTL0_KEY_MASK) | RTC_C_KEY;
+    RTC_C->CTL0 = (RTC_C->CTL0 & ~RTC_C_CTL0_KEY_MASK) | RTC_C_KEY;
     RTC_C->CTL13 = (RTC_C->CTL13 & ~(RTC_C_CTL13_CALF_3)) | frequencySelect;
     BITBAND_PERI(RTC_C->CTL0, RTC_C_CTL0_KEY_OFS) = 0;
 }
@@ -63,7 +63,7 @@ void RTC_C_setCalibrationFrequency(uint_fast16_t frequencySelect)
 void RTC_C_setCalibrationData(uint_fast8_t offsetDirection,
         uint_fast8_t offsetValue)
 {
-	RTC_C->CTL0 = (RTC_C->CTL0 & ~RTC_C_CTL0_KEY_MASK) | RTC_C_KEY;
+    RTC_C->CTL0 = (RTC_C->CTL0 & ~RTC_C_CTL0_KEY_MASK) | RTC_C_KEY;
     RTC_C->OCAL = offsetValue + offsetDirection;
     BITBAND_PERI(RTC_C->CTL0, RTC_C_CTL0_KEY_OFS) = 0;
 }
@@ -85,7 +85,7 @@ bool RTC_C_setTemperatureCompensation(uint_fast16_t offsetDirection,
 void RTC_C_initCalendar(const RTC_C_Calendar *calendarTime,
         uint_fast16_t formatSelect)
 {
-	RTC_C->CTL0 = (RTC_C->CTL0 & ~RTC_C_CTL0_KEY_MASK) | RTC_C_KEY;
+    RTC_C->CTL0 = (RTC_C->CTL0 & ~RTC_C_CTL0_KEY_MASK) | RTC_C_KEY;
 
     BITBAND_PERI(RTC_C->CTL13, RTC_C_CTL13_HOLD_OFS) = 1;
 
@@ -131,7 +131,7 @@ void RTC_C_setCalendarAlarm(uint_fast8_t minutesAlarm, uint_fast8_t hoursAlarm,
 
 void RTC_C_setCalendarEvent(uint_fast16_t eventSelect)
 {
-	RTC_C->CTL0 = (RTC_C->CTL0 & ~RTC_C_CTL0_KEY_MASK) | RTC_C_KEY;
+    RTC_C->CTL0 = (RTC_C->CTL0 & ~RTC_C_CTL0_KEY_MASK) | RTC_C_KEY;
     RTC_C->CTL13 = (RTC_C->CTL13 & ~(RTC_C_CTL13_TEV_3)) | eventSelect;
     BITBAND_PERI(RTC_C->CTL0, RTC_C_CTL0_KEY_OFS) = 0;
 }
@@ -161,15 +161,15 @@ uint_fast8_t RTC_C_getPrescaleValue(uint_fast8_t prescaleSelect)
 void RTC_C_setPrescaleValue(uint_fast8_t prescaleSelect,
         uint_fast8_t prescaleCounterValue)
 {
-	RTC_C->CTL0 = (RTC_C->CTL0 & ~RTC_C_CTL0_KEY_MASK) | RTC_C_KEY;
+    RTC_C->CTL0 = (RTC_C->CTL0 & ~RTC_C_CTL0_KEY_MASK) | RTC_C_KEY;
 
     if (RTC_C_PRESCALE_0 == prescaleSelect)
     {
         RTC_C->PS = (RTC_C->PS & ~RTC_C_PS_RT0PS_MASK) | prescaleCounterValue;
     } else if (RTC_C_PRESCALE_1 == prescaleSelect)
     {
-    	RTC_C->PS = (RTC_C->PS & ~RTC_C_PS_RT1PS_MASK)
-    			| (prescaleCounterValue << RTC_C_PS_RT1PS_OFS);
+        RTC_C->PS = (RTC_C->PS & ~RTC_C_PS_RT1PS_MASK)
+                | (prescaleCounterValue << RTC_C_PS_RT1PS_OFS);
     }
 
     BITBAND_PERI(RTC_C->CTL0, RTC_C_CTL0_KEY_OFS) = 0;
@@ -190,7 +190,7 @@ uint16_t RTC_C_convertBinaryToBCD(uint16_t valueToConvert)
 void RTC_C_enableInterrupt(uint8_t interruptMask)
 {
     if (interruptMask & (RTC_C_CTL0_OFIE + RTC_C_CTL0_TEVIE + RTC_C_CTL0_AIE
-    		+ RTC_C_CTL0_RDYIE))
+            + RTC_C_CTL0_RDYIE))
     {
         RTC_C->CTL0 = RTC_C_KEY | (interruptMask
                 & (RTC_C_CTL0_OFIE + RTC_C_CTL0_TEVIE + RTC_C_CTL0_AIE
@@ -212,7 +212,7 @@ void RTC_C_enableInterrupt(uint8_t interruptMask)
 void RTC_C_disableInterrupt(uint8_t interruptMask)
 {
     if (interruptMask & (RTC_C_CTL0_OFIE + RTC_C_CTL0_TEVIE + RTC_C_CTL0_AIE
-    		+ RTC_C_CTL0_RDYIE))
+            + RTC_C_CTL0_RDYIE))
     {
         RTC_C->CTL0 = RTC_C_KEY
                 | (RTC_C->CTL0 & ~((interruptMask | RTC_C_CTL0_KEY_MASK)

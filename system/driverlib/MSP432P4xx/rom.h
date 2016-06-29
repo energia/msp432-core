@@ -1,10 +1,10 @@
 /*
  * -------------------------------------------
- *    MSP432 DriverLib - v3_10_00_09 
+ *    MSP432 DriverLib - v3_21_00_05 
  * -------------------------------------------
  *
  * --COPYRIGHT--,BSD,BSD
- * Copyright (c) 2014, Texas Instruments Incorporated
+ * Copyright (c) 2016, Texas Instruments Incorporated
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -34,16 +34,6 @@
  * OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE,
  * EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  * --/COPYRIGHT--*/
-//*****************************************************************************
-//
-// rom.h - Macros to facilitate calling functions in the ROM.
-//
-// Copyright (c) 2013 Texas Instruments Incorporated.  All rights reserved.
-// TI Information - Selective Disclosure
-//
-//*****************************************************************************
-//
-
 #ifndef __ROM_H__
 #define __ROM_H__
 
@@ -172,10 +162,6 @@
         ((uint_fast16_t (*)(uint32_t memorySelect))ROM_ADC14TABLE[17])
 #endif
 #if defined(TARGET_IS_MSP432P4XX)
-#define ROM_ADC14_getMultiSequenceResult                                      \
-        ((void (*)(uint16_t* res))ROM_ADC14TABLE[18])
-#endif
-#if defined(TARGET_IS_MSP432P4XX)
 #define ROM_ADC14_getResultArray                                              \
         ((void (*)(uint32_t memoryStart,                                      \
                    uint32_t memoryEnd,                                        \
@@ -297,12 +283,20 @@
         ((void (*)(uint32_t moduleInstance))ROM_AES256TABLE[12])
 #endif
 #if defined(TARGET_IS_MSP432P4XX)
+#define ROM_AES256_getInterruptStatus                                         \
+        ((uint32_t (*)(uint32_t moduleInstance))ROM_AES256TABLE[13])
+#endif
+#if defined(TARGET_IS_MSP432P4XX)
 #define ROM_AES256_enableInterrupt                                            \
         ((void (*)(uint32_t moduleInstance))ROM_AES256TABLE[14])
 #endif
 #if defined(TARGET_IS_MSP432P4XX)
 #define ROM_AES256_disableInterrupt                                           \
         ((void (*)(uint32_t moduleInstance))ROM_AES256TABLE[15])
+#endif
+#if defined(TARGET_IS_MSP432P4XX)
+#define ROM_AES256_getInterruptFlagStatus                                     \
+        ((uint32_t (*)(uint32_t moduleInstance))ROM_AES256TABLE[18])
 #endif
 
 //*****************************************************************************
@@ -452,12 +446,30 @@
 //
 //*****************************************************************************
 #if defined(TARGET_IS_MSP432P4XX)
+#define ROM_CS_initClockSignal                                                \
+        ((void (*)(uint32_t selectedClockSignal,                              \
+                   uint32_t clockSource,                                      \
+                   uint32_t clockSourceDivider))ROM_CSTABLE[0])
+#endif
+#if defined(TARGET_IS_MSP432P4XX)
+#define ROM_CS_setReferenceOscillatorFrequency                                \
+        ((void (*)(uint8_t referenceFrequency))ROM_CSTABLE[1])
+#endif
+#if defined(TARGET_IS_MSP432P4XX)
 #define ROM_CS_enableClockRequest                                             \
         ((void (*)(uint32_t selectClock))ROM_CSTABLE[2])
 #endif
 #if defined(TARGET_IS_MSP432P4XX)
 #define ROM_CS_disableClockRequest                                            \
         ((void (*)(uint32_t selectClock))ROM_CSTABLE[3])
+#endif
+#if defined(TARGET_IS_MSP432P4XX)
+#define ROM_CS_setDCOCenteredFrequency                                        \
+        ((void (*)(uint32_t dcoFreq))ROM_CSTABLE[4])
+#endif
+#if defined(TARGET_IS_MSP432P4XX)
+#define ROM_CS_tuneDCOFrequency                                               \
+        ((void (*)(int16_t tuneParameter))ROM_CSTABLE[5])
 #endif
 #if defined(TARGET_IS_MSP432P4XX)
 #define ROM_CS_enableDCOExternalResistor                                      \
@@ -468,12 +480,54 @@
         ((void (*)(void))ROM_CSTABLE[7])
 #endif
 #if defined(TARGET_IS_MSP432P4XX)
+#define ROM_CS_enableInterrupt                                                \
+        ((void (*)(uint32_t flags))ROM_CSTABLE[8])
+#endif
+#if defined(TARGET_IS_MSP432P4XX)
+#define ROM_CS_disableInterrupt                                               \
+        ((void (*)(uint32_t flags))ROM_CSTABLE[9])
+#endif
+#if defined(TARGET_IS_MSP432P4XX)
 #define ROM_CS_getEnabledInterruptStatus                                      \
         ((uint32_t (*)(void))ROM_CSTABLE[10])
 #endif
 #if defined(TARGET_IS_MSP432P4XX)
 #define ROM_CS_getInterruptStatus                                             \
         ((uint32_t (*)(void))ROM_CSTABLE[11])
+#endif
+#if defined(TARGET_IS_MSP432P4XX)
+#define ROM_CS_setDCOFrequency                                                \
+        ((void (*)(uint32_t dcoFrequency))ROM_CSTABLE[12])
+#endif
+#if defined(TARGET_IS_MSP432P4XX)
+#define ROM_CS_getDCOFrequency                                                \
+        ((uint32_t (*)(void))ROM_CSTABLE[13])
+#endif
+#if defined(TARGET_IS_MSP432P4XX)
+#define ROM_CS_enableFaultCounter                                             \
+        ((void (*)(uint_fast8_t counterSelect))ROM_CSTABLE[14])
+#endif
+#if defined(TARGET_IS_MSP432P4XX)
+#define ROM_CS_disableFaultCounter                                            \
+        ((void (*)(uint_fast8_t counterSelect))ROM_CSTABLE[15])
+#endif
+#if defined(TARGET_IS_MSP432P4XX)
+#define ROM_CS_resetFaultCounter                                              \
+        ((void (*)(uint_fast8_t counterSelect))ROM_CSTABLE[16])
+#endif
+#if defined(TARGET_IS_MSP432P4XX)
+#define ROM_CS_startFaultCounter                                              \
+        ((void (*)(uint_fast8_t counterSelect,                                \
+                   uint_fast8_t countValue))ROM_CSTABLE[17])
+#endif
+#if defined(TARGET_IS_MSP432P4XX)
+#define ROM_CS_clearInterruptFlag                                             \
+        ((void (*)(uint32_t flags))ROM_CSTABLE[20])
+#endif
+#if defined(TARGET_IS_MSP432P4XX)
+#define ROM_CS_setDCOExternalResistorCalibration                              \
+        ((void (*)(uint_fast8_t uiCalData,                                    \
+                   uint_fast8_t freqRange))ROM_CSTABLE[31])
 #endif
 
 //*****************************************************************************
@@ -628,6 +682,26 @@
                    uint32_t sector))ROM_FLASHCTLTABLE[6])
 #endif
 #if defined(TARGET_IS_MSP432P4XX)
+#define ROM_FlashCtl_verifyMemory                                             \
+        ((bool (*)(void* verifyAddr,                                          \
+                   uint32_t length,                                           \
+                   uint_fast8_t pattern))ROM_FLASHCTLTABLE[7])
+#endif
+#if defined(TARGET_IS_MSP432P4XX)
+#define ROM_FlashCtl_performMassErase                                         \
+        ((bool (*)(void))ROM_FLASHCTLTABLE[8])
+#endif
+#if defined(TARGET_IS_MSP432P4XX)
+#define ROM_FlashCtl_eraseSector                                              \
+        ((bool (*)(uint32_t addr))ROM_FLASHCTLTABLE[9])
+#endif
+#if defined(TARGET_IS_MSP432P4XX)
+#define ROM_FlashCtl_programMemory                                            \
+        ((bool (*)(void* src,                                                 \
+                   void* dest,                                                \
+                   uint32_t length))ROM_FLASHCTLTABLE[10])
+#endif
+#if defined(TARGET_IS_MSP432P4XX)
 #define ROM_FlashCtl_setProgramVerification                                   \
         ((void (*)(uint32_t verificationSetting))ROM_FLASHCTLTABLE[11])
 #endif
@@ -685,6 +759,44 @@
 #define ROM_FlashCtl_getReadMode                                              \
         ((uint32_t (*)(uint32_t flashBank))ROM_FLASHCTLTABLE[24])
 #endif
+#if defined(TARGET_IS_MSP432P4XX)
+#define ROM___FlashCtl_remaskData8Post                                        \
+        ((uint8_t (*)(uint8_t data,                                           \
+                      uint32_t addr))ROM_FLASHCTLTABLE[27])
+#endif
+#if defined(TARGET_IS_MSP432P4XX)
+#define ROM___FlashCtl_remaskData8Pre                                         \
+        ((uint8_t (*)(uint8_t data,                                           \
+                      uint32_t addr))ROM_FLASHCTLTABLE[28])
+#endif
+#if defined(TARGET_IS_MSP432P4XX)
+#define ROM___FlashCtl_remaskData32Pre                                        \
+        ((uint32_t (*)(uint32_t data,                                         \
+                       uint32_t addr))ROM_FLASHCTLTABLE[29])
+#endif
+#if defined(TARGET_IS_MSP432P4XX)
+#define ROM___FlashCtl_remaskData32Post                                       \
+        ((uint32_t (*)(uint32_t data,                                         \
+                       uint32_t addr))ROM_FLASHCTLTABLE[30])
+#endif
+#if defined(TARGET_IS_MSP432P4XX)
+#define ROM___FlashCtl_remaskBurstDataPre                                     \
+        ((void (*)(uint32_t addr,                                             \
+                   uint32_t size))ROM_FLASHCTLTABLE[31])
+#endif
+#if defined(TARGET_IS_MSP432P4XX)
+#define ROM___FlashCtl_remaskBurstDataPost                                    \
+        ((void (*)(uint32_t addr,                                             \
+                   uint32_t size))ROM_FLASHCTLTABLE[32])
+#endif
+#if defined(TARGET_IS_MSP432P4XX)
+#define ROM_FlashCtl_initiateSectorErase                                      \
+        ((void (*)(uint32_t addr))ROM_FLASHCTLTABLE[33])
+#endif
+#if defined(TARGET_IS_MSP432P4XX)
+#define ROM_FlashCtl_initiateMassErase                                        \
+        ((void (*)(void))ROM_FLASHCTLTABLE[34])
+#endif
 
 //*****************************************************************************
 //
@@ -733,7 +845,98 @@
 // Macros for calling ROM functions in the GPIO API.
 //
 //*****************************************************************************
-
+#if defined(TARGET_IS_MSP432P4XX)
+#define ROM_GPIO_setAsOutputPin                                               \
+        ((void (*)(uint_fast8_t selectedPort,                                 \
+                   uint_fast16_t selectedPins))ROM_GPIOTABLE[0])
+#endif
+#if defined(TARGET_IS_MSP432P4XX)
+#define ROM_GPIO_setOutputHighOnPin                                           \
+        ((void (*)(uint_fast8_t selectedPort,                                 \
+                   uint_fast16_t selectedPins))ROM_GPIOTABLE[1])
+#endif
+#if defined(TARGET_IS_MSP432P4XX)
+#define ROM_GPIO_setOutputLowOnPin                                            \
+        ((void (*)(uint_fast8_t selectedPort,                                 \
+                   uint_fast16_t selectedPins))ROM_GPIOTABLE[2])
+#endif
+#if defined(TARGET_IS_MSP432P4XX)
+#define ROM_GPIO_toggleOutputOnPin                                            \
+        ((void (*)(uint_fast8_t selectedPort,                                 \
+                   uint_fast16_t selectedPins))ROM_GPIOTABLE[3])
+#endif
+#if defined(TARGET_IS_MSP432P4XX)
+#define ROM_GPIO_setAsInputPinWithPullDownResistor                            \
+        ((void (*)(uint_fast8_t selectedPort,                                 \
+                   uint_fast16_t selectedPins))ROM_GPIOTABLE[4])
+#endif
+#if defined(TARGET_IS_MSP432P4XX)
+#define ROM_GPIO_setAsInputPinWithPullUpResistor                              \
+        ((void (*)(uint_fast8_t selectedPort,                                 \
+                   uint_fast16_t selectedPins))ROM_GPIOTABLE[5])
+#endif
+#if defined(TARGET_IS_MSP432P4XX)
+#define ROM_GPIO_setAsPeripheralModuleFunctionOutputPin                       \
+        ((void (*)( uint_fast8_t selectedPort,                                \
+                   uint_fast16_t selectedPins,                                \
+                   uint_fast8_t mode))ROM_GPIOTABLE[6])
+#endif
+#if defined(TARGET_IS_MSP432P4XX)
+#define ROM_GPIO_setAsPeripheralModuleFunctionInputPin                        \
+        ((void (*)( uint_fast8_t selectedPort,                                \
+                   uint_fast16_t selectedPins,                                \
+                   uint_fast8_t mode))ROM_GPIOTABLE[7])
+#endif
+#if defined(TARGET_IS_MSP432P4XX)
+#define ROM_GPIO_getInputPinValue                                             \
+        ((uint8_t (*)(uint_fast8_t selectedPort,                              \
+                      uint_fast16_t selectedPins))ROM_GPIOTABLE[8])
+#endif
+#if defined(TARGET_IS_MSP432P4XX)
+#define ROM_GPIO_interruptEdgeSelect                                          \
+        ((void (*)(uint_fast8_t selectedPort,                                 \
+                   uint_fast16_t selectedPins,                                \
+                   uint_fast8_t edgeSelect))ROM_GPIOTABLE[9])
+#endif
+#if defined(TARGET_IS_MSP432P4XX)
+#define ROM_GPIO_enableInterrupt                                              \
+        ((void (*)(uint_fast8_t selectedPort,                                 \
+                   uint_fast16_t selectedPins))ROM_GPIOTABLE[10])
+#endif
+#if defined(TARGET_IS_MSP432P4XX)
+#define ROM_GPIO_disableInterrupt                                             \
+        ((void (*)(uint_fast8_t selectedPort,                                 \
+                   uint_fast16_t selectedPins))ROM_GPIOTABLE[11])
+#endif
+#if defined(TARGET_IS_MSP432P4XX)
+#define ROM_GPIO_getInterruptStatus                                           \
+        ((uint_fast16_t (*)(uint_fast8_t selectedPort,                        \
+                            uint_fast16_t selectedPins))ROM_GPIOTABLE[12])
+#endif
+#if defined(TARGET_IS_MSP432P4XX)
+#define ROM_GPIO_clearInterruptFlag                                           \
+        ((void (*)(uint_fast8_t selectedPort,                                 \
+                   uint_fast16_t selectedPins))ROM_GPIOTABLE[13])
+#endif
+#if defined(TARGET_IS_MSP432P4XX)
+#define ROM_GPIO_setAsInputPin                                                \
+        ((void (*)(uint_fast8_t selectedPort,                                 \
+                   uint_fast16_t selectedPins))ROM_GPIOTABLE[14])
+#endif
+#if defined(TARGET_IS_MSP432P4XX)
+#define ROM_GPIO_getEnabledInterruptStatus                                    \
+        ((uint_fast16_t (*)(uint_fast8_t selectedPort))ROM_GPIOTABLE[15])
+#endif
+#if defined(TARGET_IS_MSP432P4XX)
+#define ROM_GPIO_setDriveStrengthHigh                                         \
+        ((void (*)(uint_fast8_t selectedPort,                                 \
+                   uint_fast8_t selectedPins))ROM_GPIOTABLE[16])
+#endif
+#if defined(TARGET_IS_MSP432P4XX)
+#define ROM_GPIO_setDriveStrengthLow                                          \
+        ((void (*)(uint_fast8_t selectedPort,                                 \
+                   uint_fast8_t selectedPins))ROM_GPIOTABLE[17])
+#endif
 
 //*****************************************************************************
 //
@@ -746,12 +949,24 @@
                    const eUSCI_I2C_MasterConfig *config))ROM_I2CTABLE[0])
 #endif
 #if defined(TARGET_IS_MSP432P4XX)
+#define ROM_I2C_initSlave                                                     \
+        ((void (*)(uint32_t moduleInstance,                                   \
+                   uint_fast16_t slaveAddress,                                \
+                   uint_fast8_t slaveAddressOffset,                           \
+                   uint32_t slaveOwnAddressEnable))ROM_I2CTABLE[1])
+#endif
+#if defined(TARGET_IS_MSP432P4XX)
 #define ROM_I2C_enableModule                                                  \
         ((void (*)(uint32_t moduleInstance))ROM_I2CTABLE[2])
 #endif
 #if defined(TARGET_IS_MSP432P4XX)
 #define ROM_I2C_disableModule                                                 \
         ((void (*)(uint32_t moduleInstance))ROM_I2CTABLE[3])
+#endif
+#if defined(TARGET_IS_MSP432P4XX)
+#define ROM_I2C_setSlaveAddress                                               \
+        ((void (*)(uint32_t moduleInstance,                                   \
+                   uint_fast16_t slaveAddress))ROM_I2CTABLE[4])
 #endif
 #if defined(TARGET_IS_MSP432P4XX)
 #define ROM_I2C_setMode                                                       \
@@ -898,6 +1113,11 @@
                    uint_fast16_t mask))ROM_I2CTABLE[35])
 #endif
 #if defined(TARGET_IS_MSP432P4XX)
+#define ROM_I2C_getInterruptStatus                                            \
+        ((uint_fast16_t (*)(uint32_t moduleInstance,                          \
+                            uint16_t mask))ROM_I2CTABLE[36])
+#endif
+#if defined(TARGET_IS_MSP432P4XX)
 #define ROM_I2C_getEnabledInterruptStatus                                     \
         ((uint_fast16_t (*)(uint32_t moduleInstance))ROM_I2CTABLE[37])
 #endif
@@ -975,6 +1195,10 @@
 #if defined(TARGET_IS_MSP432P4XX)
 #define ROM_Interrupt_disableSleepOnIsrExit                                   \
         ((void (*)(void))ROM_INTTABLE[15])
+#endif
+#if defined(TARGET_IS_MSP432P4XX)
+#define ROM_Interrupt_unpendInterrupt                                         \
+        ((void (*)(uint32_t interruptNumber))ROM_INTTABLE[18])
 #endif
 
 //*****************************************************************************
@@ -1059,8 +1283,17 @@
         ((bool (*)(uint_fast8_t powerState))ROM_PCMTABLE[6])
 #endif
 #if defined(TARGET_IS_MSP432P4XX)
+#define ROM_PCM_setPowerStateWithTimeout                                      \
+        ((bool (*)(uint_fast8_t powerState,                                   \
+                   uint32_t timeout))ROM_PCMTABLE[7])
+#endif
+#if defined(TARGET_IS_MSP432P4XX)
 #define ROM_PCM_getPowerState                                                 \
         ((uint8_t (*)(void))ROM_PCMTABLE[8])
+#endif
+#if defined(TARGET_IS_MSP432P4XX)
+#define ROM_PCM_shutdownDevice                                                \
+        ((bool (*)(uint32_t shutdownMode))ROM_PCMTABLE[9])
 #endif
 #if defined(TARGET_IS_MSP432P4XX)
 #define ROM_PCM_gotoLPM0                                                      \
@@ -1089,6 +1322,42 @@
 #if defined(TARGET_IS_MSP432P4XX)
 #define ROM_PCM_clearInterruptFlag                                            \
         ((void (*)(uint32_t flags))ROM_PCMTABLE[16])
+#endif
+#if defined(TARGET_IS_MSP432P4XX)
+#define ROM_PCM_enableRudeMode                                                \
+        ((void (*)(void))ROM_PCMTABLE[17])
+#endif
+#if defined(TARGET_IS_MSP432P4XX)
+#define ROM_PCM_disableRudeMode                                               \
+        ((void (*)(void))ROM_PCMTABLE[18])
+#endif
+#if defined(TARGET_IS_MSP432P4XX)
+#define ROM_PCM_gotoLPM0InterruptSafe                                         \
+        ((bool (*)(void))ROM_PCMTABLE[19])
+#endif
+#if defined(TARGET_IS_MSP432P4XX)
+#define ROM_PCM_gotoLPM3InterruptSafe                                         \
+        ((bool (*)(void))ROM_PCMTABLE[20])
+#endif
+#if defined(TARGET_IS_MSP432P4XX)
+#define ROM_PCM_setCoreVoltageLevelNonBlocking                                \
+        ((bool (*)(uint_fast8_t voltageLevel))ROM_PCMTABLE[23])
+#endif
+#if defined(TARGET_IS_MSP432P4XX)
+#define ROM_PCM_setPowerModeNonBlocking                                       \
+        ((bool (*)(uint_fast8_t powerMode))ROM_PCMTABLE[24])
+#endif
+#if defined(TARGET_IS_MSP432P4XX)
+#define ROM_PCM_setPowerStateNonBlocking                                      \
+        ((bool (*)(uint_fast8_t powerState))ROM_PCMTABLE[25])
+#endif
+#if defined(TARGET_IS_MSP432P4XX)
+#define ROM_PCM_gotoLPM4                                                      \
+        ((bool (*)(void))ROM_PCMTABLE[26])
+#endif
+#if defined(TARGET_IS_MSP432P4XX)
+#define ROM_PCM_gotoLPM4InterruptSafe                                         \
+        ((bool (*)(void))ROM_PCMTABLE[27])
 #endif
 
 //*****************************************************************************
@@ -1164,6 +1433,14 @@
 #if defined(TARGET_IS_MSP432P4XX)
 #define ROM_PSS_clearInterruptFlag                                            \
         ((void (*)(void))ROM_PSSTABLE[17])
+#endif
+#if defined(TARGET_IS_MSP432P4XX)
+#define ROM_PSS_enableForcedDCDCOperation                                     \
+        ((void (*)(void))ROM_PSSTABLE[20])
+#endif
+#if defined(TARGET_IS_MSP432P4XX)
+#define ROM_PSS_disableForcedDCDCOperation                                    \
+        ((void (*)(void))ROM_PSSTABLE[21])
 #endif
 
 //*****************************************************************************
@@ -1339,6 +1616,15 @@
                    uint_fast8_t prescaleEventDivider))ROM_RTCTABLE[9])
 #endif
 #if defined(TARGET_IS_MSP432P4XX)
+#define ROM_RTC_C_getPrescaleValue                                            \
+        ((uint_fast8_t (*)(uint_fast8_t prescaleSelect))ROM_RTCTABLE[10])
+#endif
+#if defined(TARGET_IS_MSP432P4XX)
+#define ROM_RTC_C_setPrescaleValue                                            \
+        ((void (*)(uint_fast8_t prescaleSelect,                               \
+                   uint_fast8_t prescaleCounterValue))ROM_RTCTABLE[11])
+#endif
+#if defined(TARGET_IS_MSP432P4XX)
 #define ROM_RTC_C_convertBCDToBinary                                          \
         ((uint16_t (*)(uint16_t valueToConvert))ROM_RTCTABLE[12])
 #endif
@@ -1439,6 +1725,11 @@
                    uint_fast8_t mask))ROM_SPITABLE[13])
 #endif
 #if defined(TARGET_IS_MSP432P4XX)
+#define ROM_SPI_getInterruptStatus                                            \
+        ((uint_fast8_t (*)(uint32_t moduleInstance,                           \
+                           uint16_t mask))ROM_SPITABLE[14])
+#endif
+#if defined(TARGET_IS_MSP432P4XX)
 #define ROM_SPI_getEnabledInterruptStatus                                     \
         ((uint_fast8_t (*)(uint32_t moduleInstance))ROM_SPITABLE[15])
 #endif
@@ -1464,6 +1755,22 @@
 #if defined(TARGET_IS_MSP432P4XX)
 #define ROM_SysCtl_rebootDevice                                               \
         ((void (*)(void))ROM_SYSCTLTABLE[2])
+#endif
+#if defined(TARGET_IS_MSP432P4XX)
+#define ROM_SysCtl_enableSRAMBank                                             \
+        ((void (*)(uint_fast8_t sramBank))ROM_SYSCTLTABLE[3])
+#endif
+#if defined(TARGET_IS_MSP432P4XX)
+#define ROM_SysCtl_disableSRAMBank                                            \
+        ((void (*)(uint_fast8_t sramBank))ROM_SYSCTLTABLE[4])
+#endif
+#if defined(TARGET_IS_MSP432P4XX)
+#define ROM_SysCtl_enableSRAMBankRetention                                    \
+        ((void (*)(uint_fast8_t sramBank))ROM_SYSCTLTABLE[5])
+#endif
+#if defined(TARGET_IS_MSP432P4XX)
+#define ROM_SysCtl_disableSRAMBankRetention                                   \
+        ((void (*)(uint_fast8_t sramBank))ROM_SYSCTLTABLE[6])
 #endif
 #if defined(TARGET_IS_MSP432P4XX)
 #define ROM_SysCtl_enablePeripheralAtCPUHalt                                  \
@@ -1492,6 +1799,26 @@
 #if defined(TARGET_IS_MSP432P4XX)
 #define ROM_SysCtl_getNMISourceStatus                                         \
         ((uint_fast8_t (*)(void))ROM_SYSCTLTABLE[13])
+#endif
+#if defined(TARGET_IS_MSP432P4XX)
+#define ROM_SysCtl_getTempCalibrationConstant                                 \
+        ((uint_fast16_t (*)(uint32_t refVoltage,                              \
+                            uint32_t temperature))ROM_SYSCTLTABLE[14])
+#endif
+#if defined(TARGET_IS_MSP432P4XX)
+#define ROM_SysCtl_enableGlitchFilter                                         \
+        ((void (*)(void))ROM_SYSCTLTABLE[15])
+#endif
+#if defined(TARGET_IS_MSP432P4XX)
+#define ROM_SysCtl_disableGlitchFilter                                        \
+        ((void (*)(void))ROM_SYSCTLTABLE[16])
+#endif
+#if defined(TARGET_IS_MSP432P4XX)
+#define ROM_SysCtl_getTLVInfo                                                 \
+        ((void (*)(uint_fast8_t tag,                                          \
+                   uint_fast8_t instance,                                     \
+                   uint_fast8_t *length,                                      \
+                   uint32_t **data_address))ROM_SYSCTLTABLE[17])
 #endif
 
 //*****************************************************************************
@@ -1584,12 +1911,6 @@
                             uint_fast16_t captureCompareRegister))ROM_TIMER_ATABLE[9])
 #endif
 #if defined(TARGET_IS_MSP432P4XX)
-#define ROM_Timer_A_setOutputForOutputModeOutBitValue                         \
-        ((void (*)(uint32_t timer,                                            \
-                   uint_fast16_t captureCompareRegister,                      \
-                   uint_fast8_t outputModeOutBitValue))ROM_TIMER_ATABLE[10])
-#endif
-#if defined(TARGET_IS_MSP432P4XX)
 #define ROM_Timer_A_generatePWM                                               \
         ((void (*)(uint32_t timer,                                            \
                    const Timer_A_PWMConfig *config))ROM_TIMER_ATABLE[11])
@@ -1649,6 +1970,10 @@
 #define ROM_Timer_A_getCaptureCompareEnabledInterruptStatus                   \
         ((uint32_t (*)(uint32_t timer,                                        \
                        uint_fast16_t captureCompareRegister))ROM_TIMER_ATABLE[23])
+#endif
+#if defined(TARGET_IS_MSP432P4XX)
+#define ROM_Timer_A_getCounterValue                                           \
+        ((uint16_t (*)(uint32_t timer))ROM_TIMER_ATABLE[26])
 #endif
 
 //*****************************************************************************
@@ -1772,6 +2097,11 @@
                    uint_fast8_t mask))ROM_UARTTABLE[13])
 #endif
 #if defined(TARGET_IS_MSP432P4XX)
+#define ROM_UART_getInterruptStatus                                           \
+        ((uint_fast8_t (*)(uint32_t moduleInstance,                           \
+                           uint8_t mask))ROM_UARTTABLE[14])
+#endif
+#if defined(TARGET_IS_MSP432P4XX)
 #define ROM_UART_clearInterruptFlag                                           \
         ((void (*)(uint32_t moduleInstance,                                   \
                    uint_fast8_t mask))ROM_UARTTABLE[15])
@@ -1811,6 +2141,14 @@
 #define ROM_WDT_A_initIntervalTimer                                           \
         ((void (*)(uint_fast8_t clockSelect,                                  \
                    uint_fast8_t clockDivider))ROM_WDTTABLE[4])
+#endif
+#if defined(TARGET_IS_MSP432P4XX)
+#define ROM_WDT_A_setPasswordViolationReset                                   \
+        ((void (*)(uint_fast8_t resetType))ROM_WDTTABLE[7])
+#endif
+#if defined(TARGET_IS_MSP432P4XX)
+#define ROM_WDT_A_setTimeoutReset                                             \
+        ((void (*)(uint_fast8_t resetType))ROM_WDTTABLE[8])
 #endif
 
 #endif // __ROM_H__

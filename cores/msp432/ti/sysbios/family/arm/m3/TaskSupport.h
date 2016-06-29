@@ -180,6 +180,7 @@ struct ti_sysbios_family_arm_m3_TaskSupport_Fxns__ {
     xdc_SizeT (*stackUsed)(xdc_Char*, xdc_SizeT);
     xdc_UInt (*getStackAlignment)(void);
     xdc_SizeT (*getDefaultStackSize)(void);
+    xdc_Ptr (*getCheckValueAddr)(xdc_Ptr);
     xdc_runtime_Types_SysFxns2 __sfxns;
 };
 
@@ -227,6 +228,11 @@ __extern xdc_UInt ti_sysbios_family_arm_m3_TaskSupport_getStackAlignment__E( voi
 #define ti_sysbios_family_arm_m3_TaskSupport_getDefaultStackSize ti_sysbios_family_arm_m3_TaskSupport_getDefaultStackSize__E
 xdc__CODESECT(ti_sysbios_family_arm_m3_TaskSupport_getDefaultStackSize__E, "ti_sysbios_family_arm_m3_TaskSupport_getDefaultStackSize")
 __extern xdc_SizeT ti_sysbios_family_arm_m3_TaskSupport_getDefaultStackSize__E( void );
+
+/* getCheckValueAddr__E */
+#define ti_sysbios_family_arm_m3_TaskSupport_getCheckValueAddr ti_sysbios_family_arm_m3_TaskSupport_getCheckValueAddr__E
+xdc__CODESECT(ti_sysbios_family_arm_m3_TaskSupport_getCheckValueAddr__E, "ti_sysbios_family_arm_m3_TaskSupport_getCheckValueAddr")
+__extern xdc_Ptr ti_sysbios_family_arm_m3_TaskSupport_getCheckValueAddr__E( xdc_Ptr curTask );
 
 
 /*
@@ -325,6 +331,7 @@ static inline xdc_Void ti_sysbios_family_arm_m3_TaskSupport_Module_setMask( xdc_
 #define TaskSupport_stackUsed ti_sysbios_family_arm_m3_TaskSupport_stackUsed
 #define TaskSupport_getStackAlignment ti_sysbios_family_arm_m3_TaskSupport_getStackAlignment
 #define TaskSupport_getDefaultStackSize ti_sysbios_family_arm_m3_TaskSupport_getDefaultStackSize
+#define TaskSupport_getCheckValueAddr ti_sysbios_family_arm_m3_TaskSupport_getCheckValueAddr
 #define TaskSupport_Module_name ti_sysbios_family_arm_m3_TaskSupport_Module_name
 #define TaskSupport_Module_id ti_sysbios_family_arm_m3_TaskSupport_Module_id
 #define TaskSupport_Module_startup ti_sysbios_family_arm_m3_TaskSupport_Module_startup

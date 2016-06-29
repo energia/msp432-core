@@ -1,10 +1,10 @@
 /*
  * -------------------------------------------
- *    MSP432 DriverLib - v3_10_00_09 
+ *    MSP432 DriverLib - v3_21_00_05 
  * -------------------------------------------
  *
  * --COPYRIGHT--,BSD,BSD
- * Copyright (c) 2014, Texas Instruments Incorporated
+ * Copyright (c) 2016, Texas Instruments Incorporated
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -62,7 +62,7 @@ void I2C_initMaster(uint32_t moduleInstance, const eUSCI_I2C_MasterConfig *confi
 
     /* Disable the USCI module and clears the other bits of control register */
     BITBAND_PERI(EUSCI_B_CMSIS(moduleInstance)->CTLW0,EUSCI_B_CTLW0_SWRST_OFS) =
-    		1;
+            1;
 
     /* Configure Automatic STOP condition generation */
     EUSCI_B_CMSIS(moduleInstance)->CTLW1 =
@@ -81,7 +81,7 @@ void I2C_initMaster(uint32_t moduleInstance, const eUSCI_I2C_MasterConfig *confi
     EUSCI_B_CMSIS(moduleInstance)->CTLW0 =
             (EUSCI_B_CMSIS(moduleInstance)->CTLW0 & ~EUSCI_B_CTLW0_SSEL_MASK)
                     | (config->selectClockSource | EUSCI_B_CTLW0_MST
-                    		| EUSCI_B_CTLW0_MODE_3 | EUSCI_B_CTLW0_SYNC
+                            | EUSCI_B_CTLW0_MODE_3 | EUSCI_B_CTLW0_SYNC
                             | EUSCI_B_CTLW0_SWRST);
 
     /*
@@ -106,7 +106,7 @@ void I2C_initSlave(uint32_t moduleInstance, uint_fast16_t slaveAddress,
 
     /* Disable the USCI module */
     BITBAND_PERI(EUSCI_B_CMSIS(moduleInstance)->CTLW0,EUSCI_B_CTLW0_SWRST_OFS) =
-    		1;
+            1;
 
     /* Clear USCI master mode */
     EUSCI_B_CMSIS(moduleInstance)->CTLW0 =
@@ -115,21 +115,21 @@ void I2C_initSlave(uint32_t moduleInstance, uint_fast16_t slaveAddress,
 
     /* Set up the slave address. */
     HWREG16((uint32_t)&EUSCI_B_CMSIS(moduleInstance)->I2COA0 + slaveAddressOffset) =
-    		slaveAddress + slaveOwnAddressEnable;
+            slaveAddress + slaveOwnAddressEnable;
 }
 
 void I2C_enableModule(uint32_t moduleInstance)
 {
     /* Reset the UCSWRST bit to enable the USCI Module */
     BITBAND_PERI(EUSCI_B_CMSIS(moduleInstance)->CTLW0,EUSCI_B_CTLW0_SWRST_OFS) =
-    		0;
+            0;
 }
 
 void I2C_disableModule(uint32_t moduleInstance)
 {
     /* Set the UCSWRST bit to disable the USCI Module */
     BITBAND_PERI(EUSCI_B_CMSIS(moduleInstance)->CTLW0,EUSCI_B_CTLW0_SWRST_OFS) =
-    		1;
+            1;
     ;
 }
 
@@ -183,7 +183,7 @@ uint8_t I2C_isBusBusy(uint32_t moduleInstance)
 {
     //Return the bus busy status.
     return BITBAND_PERI(EUSCI_B_CMSIS(moduleInstance)->STATW,
-    		EUSCI_B_STATW_BBUSY_OFS);
+            EUSCI_B_STATW_BBUSY_OFS);
 }
 
 void I2C_masterSendSingleByte(uint32_t moduleInstance, uint8_t txData)
@@ -466,7 +466,7 @@ void I2C_masterReceiveStart(uint32_t moduleInstance)
     //Set USCI in Receive mode
     EUSCI_B_CMSIS(moduleInstance)->CTLW0 =
             (EUSCI_B_CMSIS(moduleInstance)->CTLW0 & (~EUSCI_B_CTLW0_TR))
-			| EUSCI_B_CTLW0_TXSTT;
+            | EUSCI_B_CTLW0_TXSTT;
 }
 
 uint8_t I2C_masterReceiveMultiByteNext(uint32_t moduleInstance)
@@ -478,7 +478,7 @@ uint8_t I2C_masterReceiveMultiByteFinish(uint32_t moduleInstance)
 {
     //Send stop condition.
     BITBAND_PERI(EUSCI_B_CMSIS(moduleInstance)->CTLW0,EUSCI_B_CTLW0_TXSTP_OFS) =
-    		1;
+            1;
 
     //Wait for Stop to finish
     while (BITBAND_PERI(EUSCI_B_CMSIS(moduleInstance)->CTLW0, EUSCI_B_CTLW0_TXSTP_OFS))
@@ -540,7 +540,7 @@ uint8_t I2C_masterReceiveSingle(uint32_t moduleInstance)
     if (!BITBAND_PERI(EUSCI_B_CMSIS(moduleInstance)->IE, EUSCI_B_IE_RXIE0_OFS))
     {
         while (!BITBAND_PERI(EUSCI_B_CMSIS(moduleInstance)->IFG,
-        		EUSCI_B_IFG_RXIFG0_OFS))
+                EUSCI_B_IFG_RXIFG0_OFS))
             ;
     }
 
@@ -561,32 +561,32 @@ uint32_t I2C_getTransmitBufferAddressForDMA(uint32_t moduleInstance)
 uint8_t I2C_masterIsStopSent(uint32_t moduleInstance)
 {
     return BITBAND_PERI(EUSCI_B_CMSIS(moduleInstance)->CTLW0,
-    		EUSCI_B_CTLW0_TXSTP_OFS);
+            EUSCI_B_CTLW0_TXSTP_OFS);
 }
 
 bool I2C_masterIsStartSent(uint32_t moduleInstance)
 {
     return BITBAND_PERI(EUSCI_B_CMSIS(moduleInstance)->CTLW0,
-    		EUSCI_B_CTLW0_TXSTT_OFS);
+            EUSCI_B_CTLW0_TXSTT_OFS);
 }
 
 void I2C_masterSendStart(uint32_t moduleInstance)
 {
     BITBAND_PERI(EUSCI_B_CMSIS(moduleInstance)->CTLW0,EUSCI_B_CTLW0_TXSTT_OFS) =
-    		1;
+            1;
 }
 
 void I2C_enableMultiMasterMode(uint32_t moduleInstance)
 {
     BITBAND_PERI(EUSCI_B_CMSIS(moduleInstance)->CTLW0,EUSCI_B_CTLW0_SWRST_OFS) =
-    		1;
+            1;
     BITBAND_PERI(EUSCI_B_CMSIS(moduleInstance)->CTLW0,EUSCI_B_CTLW0_MM_OFS) = 1;
 }
 
 void I2C_disableMultiMasterMode(uint32_t moduleInstance)
 {
     BITBAND_PERI(EUSCI_B_CMSIS(moduleInstance)->CTLW0,EUSCI_B_CTLW0_SWRST_OFS) =
-    		1;
+            1;
     BITBAND_PERI(EUSCI_B_CMSIS(moduleInstance)->CTLW0,EUSCI_B_CTLW0_MM_OFS) = 0;
 }
 
@@ -761,5 +761,5 @@ void I2C_unregisterInterrupt(uint32_t moduleInstance)
 void I2C_slaveSendNAK(uint32_t moduleInstance)
 {
     BITBAND_PERI(EUSCI_B_CMSIS(moduleInstance)->CTLW0,EUSCI_B_CTLW0_TXNACK_OFS)
-    		= 1;
+            = 1;
 }

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2015, Texas Instruments Incorporated
+ * Copyright (c) 2015-2016, Texas Instruments Incorporated
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -32,7 +32,7 @@
 /** ============================================================================
  *  @file       I2CEUSCIB.h
  *
- *  @brief      I2CEUSCIB driver implementation for a USCIB controller
+ *  @brief      I2CEUSCIB driver implementation for an EUSCIB controller
  *
  *  The I2CEUSCIB header file should be included in an application as follows:
  *  @code
@@ -42,17 +42,18 @@
  *
  *  Refer to @ref I2C.h for a complete description of APIs & example of use.
  *
- *  This I2C driver implementation is designed to operate on a UCSI controller
+ *  This I2C driver implementation is designed to operate on a EUSCIB controller
  *  in I2C mode.
  *
  *  ## Interrupts #
  *  This driver is interrupt driven. For MSP430 devices, it requires the user to
- *  statically (.cfg) create a Hwi for the accocated USCI controller and have it
- *  call the I2CEUSCIB's Hwi interrupt function I2CEUSCIB_hwiIntFxn().
+ *  statically create a Hwi (in the application .cfg file) for the associated
+ *  EUSCIB controller, and have it call the I2CEUSCIB's Hwi interrupt function
+ *  I2CEUSCIB_hwiIntFxn().
  *
  *  The following information is needed to create the Hwi:
  *   -# Interrupt vector\n
- *      The interrupt vector number can be found in a given MSP430 device
+ *      The interrupt vector number can be found in the MSP430 device
  *      specific header file (e.g. msp430f5529.h).
  *   -# Hwi function pointer\n
  *      Call I2CEUSCIB_hwiIntFxn()
@@ -135,18 +136,18 @@ typedef enum I2CEUSCIB_Mode {
  *  These fields are used by driverlib APIs and therefore must be populated by
  *  driverlib macro definitions. For MSP430Ware these definitions are found in:
  *      - inc/hw_memmap.h
- *      - usci_b_i2c.h
+ *      - eusci_b_i2c.h
  *
  *  A sample structure is shown below:
  *  @code
  *  const I2CEUSCIB_HWAttrs i2cUSCIBHWAttrs[] = {
  *      {
  *          .baseAddr = EUSCI_B0_BASE,
- *          .clockSource = EUSCI_B_SPI_CLOCKSOURCE_SMCLK
+ *          .clockSource = EUSCI_B_I2C_CLOCKSOURCE_SMCLK
  *      },
  *      {
  *          .baseAddr = EUSCI_B1_BASE,
- *          .clockSource = EUSCI_B_SPI_CLOCKSOURCE_SMCLK
+ *          .clockSource = EUSCI_B_I2C_CLOCKSOURCE_SMCLK
  *      },
  *  };
  *  @endcode
@@ -164,10 +165,10 @@ typedef struct I2CEUSCIB_HWAttrs {
  *  The application must not access any member variables of this structure!
  */
 typedef struct I2CEUSCIB_Object {
-    bool                isOpen;         /* To determine if the SPI is open */
+    bool                isOpen;         /* Indicates if the I2C is open */
 
     Semaphore_Struct    mutex;          /* Grants exclusive access to I2C */
-    Semaphore_Struct    transferComplete; /* Notify finished I2C transfer */
+    Semaphore_Struct    transferComplete; /* Signal I2C transfer complete */
 
     I2C_TransferMode    transferMode;   /* Blocking or Callback mode */
     I2C_CallbackFxn     transferCallbackFxn; /* Callback function pointer */
@@ -176,15 +177,17 @@ typedef struct I2CEUSCIB_Object {
 
     I2C_Transaction    *currentTransaction; /* Ptr to current I2C transaction */
 
-    uint8_t            *writeBufIdx;    /* Internal inc. writeBuf index */
-    size_t              writeCountIdx;  /* Internal dec. writeCounter */
+    uint8_t            *writeBufIdx;    /* Internal writeBuf index (inc.) */
+    size_t              writeCountIdx;  /* Internal writeCounter (dec.) */
 
-    uint8_t            *readBufIdx;     /* Internal inc. readBuf index */
-    size_t              readCountIdx;   /* Internal dec. readCounter */
+    uint8_t            *readBufIdx;     /* Internal readBuf index (inc.) */
+    size_t              readCountIdx;   /* Internal readCounter (dec.) */
 
     /* I2C transaction pointers for I2C_MODE_CALLBACK */
     I2C_Transaction    *headPtr;        /* Head ptr for queued transactions */
     I2C_Transaction    *tailPtr;        /* Tail ptr for queued transactions */
+
+    uint32_t            bitRate;        /* Data transfer rate */
 
 } I2CEUSCIB_Object;
 

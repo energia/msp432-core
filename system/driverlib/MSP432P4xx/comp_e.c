@@ -1,10 +1,10 @@
 /*
  * -------------------------------------------
- *    MSP432 DriverLib - v3_10_00_09 
+ *    MSP432 DriverLib - v3_21_00_05 
  * -------------------------------------------
  *
  * --COPYRIGHT--,BSD,BSD
- * Copyright (c) 2014, Texas Instruments Incorporated
+ * Copyright (c) 2016, Texas Instruments Incorporated
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -106,7 +106,7 @@ bool COMP_E_initModule(uint32_t comparator, const COMP_E_Config *config)
     {
         // Enable Positive Terminal Input Mux and Set to the appropriate input
         COMP_E_CMSIS(comparator)->CTL0 |= COMP_E_CTL0_IPEN
-        		+ positiveTerminalInput;
+                + positiveTerminalInput;
 
         // Disable the input buffer
         COMP_E_CMSIS(comparator)->CTL3 |= (1 << positiveTerminalInput);

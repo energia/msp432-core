@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2015, Texas Instruments Incorporated
+ * Copyright (c) 2015-2016, Texas Instruments Incorporated
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -140,7 +140,7 @@ extern const Watchdog_FxnTable WatchdogMSP432_fxnTable;
 typedef struct WatchdogMSP432_HWAttrs {
     uint32_t baseAddr;     /*!< Base address of Watchdog */
     uint8_t  intNum;       /*!< WDT interrupt number */
-    uint8_t  intPriority;  /*!< WDT interrupt number */
+    uint8_t  intPriority;  /*!< WDT interrupt priority */
     uint8_t  clockSource;  /*!< Clock source for Watchdog */
     uint8_t  clockDivider; /*!< Clock divider for Watchdog */
 } WatchdogMSP432_HWAttrs;
@@ -153,7 +153,7 @@ typedef struct WatchdogMSP432_HWAttrs {
 typedef struct WatchdogMSP432_Object {
     Watchdog_ResetMode resetMode;
     HwiP_Handle        hwiHandle;
-    bool               isOpen;              /*!< Flag for open/close status */
+    bool               isOpen;              /* Flag for open/close status */
 } WatchdogMSP432_Object;
 
 #ifdef __cplusplus

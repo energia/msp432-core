@@ -290,6 +290,11 @@ __extern xdc_Void ti_sysbios_utils_Load_updateCPULoad__E( void );
 xdc__CODESECT(ti_sysbios_utils_Load_updateLoads__E, "ti_sysbios_utils_Load_updateLoads")
 __extern xdc_Void ti_sysbios_utils_Load_updateLoads__E( void );
 
+/* updateContextsAndPost__E */
+#define ti_sysbios_utils_Load_updateContextsAndPost ti_sysbios_utils_Load_updateContextsAndPost__E
+xdc__CODESECT(ti_sysbios_utils_Load_updateContextsAndPost__E, "ti_sysbios_utils_Load_updateContextsAndPost")
+__extern xdc_Void ti_sysbios_utils_Load_updateContextsAndPost__E( void );
+
 /* updateCurrentThreadTime__E */
 #define ti_sysbios_utils_Load_updateCurrentThreadTime ti_sysbios_utils_Load_updateCurrentThreadTime__E
 xdc__CODESECT(ti_sysbios_utils_Load_updateCurrentThreadTime__E, "ti_sysbios_utils_Load_updateCurrentThreadTime")
@@ -538,6 +543,7 @@ static inline ti_sysbios_knl_Queue_Handle ti_sysbios_utils_Load_Module_State_tas
 #define Load_update ti_sysbios_utils_Load_update
 #define Load_updateCPULoad ti_sysbios_utils_Load_updateCPULoad
 #define Load_updateLoads ti_sysbios_utils_Load_updateLoads
+#define Load_updateContextsAndPost ti_sysbios_utils_Load_updateContextsAndPost
 #define Load_updateCurrentThreadTime ti_sysbios_utils_Load_updateCurrentThreadTime
 #define Load_updateThreadContexts ti_sysbios_utils_Load_updateThreadContexts
 #define Load_reset ti_sysbios_utils_Load_reset

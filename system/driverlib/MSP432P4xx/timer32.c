@@ -1,10 +1,10 @@
 /*
  * -------------------------------------------
- *    MSP432 DriverLib - v3_10_00_09 
+ *    MSP432 DriverLib - v3_21_00_05 
  * -------------------------------------------
  *
  * --COPYRIGHT--,BSD,BSD
- * Copyright (c) 2014, Texas Instruments Incorporated
+ * Copyright (c) 2016, Texas Instruments Incorporated
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -43,21 +43,21 @@ void Timer32_initModule(uint32_t timer, uint32_t preScaler, uint32_t resolution,
 {
     /* Setting up one shot or continuous mode */
     if (mode == TIMER32_PERIODIC_MODE)
-    	BITBAND_PERI(TIMER32_CMSIS(timer)->CONTROL, TIMER32_CONTROL_MODE_OFS)
+        BITBAND_PERI(TIMER32_CMSIS(timer)->CONTROL, TIMER32_CONTROL_MODE_OFS)
                     = 1;
     else if (mode == TIMER32_FREE_RUN_MODE)
-    	BITBAND_PERI(TIMER32_CMSIS(timer)->CONTROL, TIMER32_CONTROL_MODE_OFS)
+        BITBAND_PERI(TIMER32_CMSIS(timer)->CONTROL, TIMER32_CONTROL_MODE_OFS)
                     = 0;
     else
         ASSERT(false);
 
     /* Setting the resolution of the timer */
-    if (resolution == TIMER32_1_MODULE6BIT)
-    	BITBAND_PERI(TIMER32_CMSIS(timer)->CONTROL, TIMER32_CONTROL_SIZE_OFS)
-		            = 0;
+    if (resolution == TIMER32_16BIT)
+        BITBAND_PERI(TIMER32_CMSIS(timer)->CONTROL, TIMER32_CONTROL_SIZE_OFS)
+                    = 0;
     else if (resolution == TIMER32_32BIT)
-    	BITBAND_PERI(TIMER32_CMSIS(timer)->CONTROL, TIMER32_CONTROL_SIZE_OFS)
-					= 1;
+        BITBAND_PERI(TIMER32_CMSIS(timer)->CONTROL, TIMER32_CONTROL_SIZE_OFS)
+                    = 1;
     else
         ASSERT(false);
 
@@ -68,26 +68,26 @@ void Timer32_initModule(uint32_t timer, uint32_t preScaler, uint32_t resolution,
             || resolution == TIMER32_PRESCALER_256);
 
     TIMER32_CMSIS(timer)->CONTROL = TIMER32_CMSIS(timer)->CONTROL
-    		& (~TIMER32_CONTROL_PRESCALE_MASK) | preScaler;
+            & (~TIMER32_CONTROL_PRESCALE_MASK) | preScaler;
 
 }
 
 void Timer32_setCount(uint32_t timer, uint32_t count)
 {
     if (!BITBAND_PERI(TIMER32_CMSIS(timer)->CONTROL, TIMER32_CONTROL_SIZE_OFS)
-    		&& (count > UINT16_MAX))
-    	TIMER32_CMSIS(timer)->LOAD = UINT16_MAX;
+            && (count > UINT16_MAX))
+        TIMER32_CMSIS(timer)->LOAD = UINT16_MAX;
     else
-    	TIMER32_CMSIS(timer)->LOAD = count;
+        TIMER32_CMSIS(timer)->LOAD = count;
 }
 
 void Timer32_setCountInBackground(uint32_t timer, uint32_t count)
 {
     if (!BITBAND_PERI(TIMER32_CMSIS(timer)->CONTROL, TIMER32_CONTROL_SIZE_OFS)
-    		&& (count > UINT16_MAX))
+            && (count > UINT16_MAX))
         TIMER32_CMSIS(timer)->BGLOAD = UINT16_MAX;
     else
-    	TIMER32_CMSIS(timer)->BGLOAD = count;
+        TIMER32_CMSIS(timer)->BGLOAD = count;
 }
 
 uint32_t Timer32_getValue(uint32_t timer)

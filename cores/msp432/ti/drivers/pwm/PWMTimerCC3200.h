@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2015-2015, Texas Instruments Incorporated
+ * Copyright (c) 2015-2016, Texas Instruments Incorporated
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -32,8 +32,7 @@
 /** ============================================================================
  * @file       PWMTimerCC3200.h
  *
- * @brief      PWM driver implementation using CC3200 General Purpose
- *             Timer peripherals.
+ * @brief      PWM driver implementation using CC3200 General Purpose Timers.
  *
  * The PWM header file should be included in an application as follows:
  * @code
@@ -41,37 +40,27 @@
  * #include <ti/drivers/pwm/PWMTimerCC3200.h>
  * @endcode
  *
- *  Refer to @ref PWM.h for a complete description of APIs & example of use.
+ * Refer to @ref PWM.h for a complete description of APIs & example of use.
  *
  * ## Operation #
  * This driver configures a CC3200 General Purpose Timer (GPT) in PWM mode.
  * When in PWM mode, each GPT is divided into 2 PWM outputs.  This driver
- * manages each output as independent PWM instances.  The timer is automatically
- * configured in count-down mode using the system clock as the source.
+ * manages each output as an independent PWM instance.  The timer is
+ * automatically configured in count-down mode using the system clock as
+ * the source.
  *
- * The period in the PWM_Params structure must be used to set the initial period.
- * After opening, the PWM_control() API can be used to change a period.  The
- * period and duty registers are 16 bits wide; thus, prescalars are used to
- * extend period and duty registers.  The maximum period supported is calculated
- * as:
- *     MAX_PERIOD = (((MAX_PRESCALAR + 1) * MAX_MATCH_VAL) / CYCLES_PER_US) - 1
- *     80 MHz clock: (((255 + 1) * 65535) / 80) - 1 = 209711 microseconds
+ * The timers operate at the system clock frequency (80 MHz). So each timer
+ * tick is 12.5 ns. The period and duty registers are 16 bits wide; thus
+ * 8-bit prescalars are used to extend period and duty registers.  The
+ * maximum value supported is 16777215 timer counts ((2^24) - 1) or
+ * 209715 microseconds.  Updates to a PWM's period or duty will occur
+ * instantaneously (GPT peripherals do not have shadow registers).
  *
- * Below is an example of how to use the PWM_control() to change a period:
- *
- * @code
- * int rc = 0;
- * int newPeriod = 6000;   // Period in microseconds
- *
- * rc = PWM_control(pwmHandle, PWMTimerCC3200_CHANGE_PERIOD, &newPeriod);
- * if (rc < 0) {
- *   // handle error condition
- * }
- * @endcode
- *
- * Updates to a PWM instance will occur instantaneously (i.e. GPT peripherals do
- * not have shadow registers).  Finally, if the duty supplied is greater than
- * the period, the output will remain in active state.
+ * Finally, when this driver is opened, it automatically changes the
+ * PWM pin's parking configuration (used when entering low power modes) to
+ * correspond with the PWM_IDLE_LEVEL set in the PWM_params.  However, this
+ * is setting is not reverted once the driver is close, it is the users
+ * responsibility to change the parking configuration if necessary.
  *
  * =============================================================================
  */
@@ -83,6 +72,7 @@
 extern "C" {
 #endif
 
+#include <stdbool.h>
 #include <ti/drivers/PWM.h>
 
 /**
@@ -109,15 +99,9 @@ extern "C" {
  *  @{
  */
 
-/*!
- *  @brief Control command to change the PWM period.
- */
-#define PWMTimerCC3200_CMD_CHANGE_PERIOD    PWM_CMD_RESERVED + 0
-/** @}*/
+/* Add PWMTimerCC3200_CMD_* macros here */
 
-/* BACKWARDS COMPATIBILITY */
-#define PWMTimerCC3200_CHANGE_PERIOD        PWMTimerCC3200_CMD_CHANGE_PERIOD
-/* END BACKWARDS COMPATIBILITY */
+/** @}*/
 
 /* PWM function table pointer */
 extern const PWM_FxnTable PWMTimerCC3200_fxnTable;
@@ -129,26 +113,47 @@ extern const PWM_FxnTable PWMTimerCC3200_fxnTable;
  *  populated by driverlib macro definitions. For CC3200 driverlib these
  *  definitions are found in:
  *      - inc/hw_memmap.h
+ *      - driverlib/gpio.h
+ *      - driverlib/pin.h
  *      - driverlib/timer.h
  *
  *  A sample structure is shown below:
  *  @code
- *  const PWMTimerCC3200_HWAttrs PWMTimerCC3200HWAttrs[] = {
+ *  const PWMTimerCC3200_HWAttrsV1 pwmTimerCC3200HWAttrs[] = {
  *      {
- *          .baseAddr = TIMERA3_BASE,
- *          .timer = TIMER_A
+ *          .timerBaseAddr = TIMERA3_BASE,
+ *          .halfTimer = TIMER_A,
+ *          .pinTimerPwmMode = PIN_MODE_3,
+ *          .pinId = PIN_01,
+ *          .gpioBaseAddr = GPIOA1_BASE,
+ *          .gpioPinIndex = GPIO_PIN_2
  *      },
  *      {
- *          .baseAddr = TIMERA3_BASE,
- *          .timer = TIMER_B
- *      },
+ *          .timerBaseAddr = TIMERA3_BASE,
+ *          .halfTimer = TIMER_B,
+ *          .pinTimerPwmMode = PIN_MODE_3,
+ *          .pinId = PIN_02,
+ *          .gpioBaseAddr = GPIOA1_BASE,
+ *          .gpioPinIndex = GPIO_PIN_3
+ *      }
  *  };
  *  @endcode
  */
-typedef struct PWMTimerCC3200_HWAttrs {
-    uint32_t baseAddr;            /*!< Timer peripheral base address */
-    uint16_t timer;               /*!< Half-timers to generate outputs */
-} PWMTimerCC3200_HWAttrs;
+typedef struct PWMTimerCC3200_HWAttrsV1 {
+    /*!< Timer peripheral base address */
+    uint32_t timerBaseAddr;
+    /*!< Half-timer to generate outputs (ex.: TIMER_A or TIMER_B) */
+    uint16_t halfTimer;
+    /*!< Timer output pin mode (ex.: PIN_MODE_3, PIN_MODE_6, etc.) */
+    uint8_t  pinTimerPwmMode;
+    /*!< Pin number (ex.: PIN_01, PIN_02, etc.) */
+    uint8_t  pinId;
+
+    /*!< GPIO port base address for the device pin. */
+    uint32_t gpioBaseAddr;
+    /*!< GPIO port pin index (ex.: GPIO_PIN_1, GPIO_PIN_3, etc.) */
+    uint8_t  gpioPinIndex;
+} PWMTimerCC3200_HWAttrsV1;
 
 /*!
  *  @brief  PWMTimerCC3200 Object
@@ -156,11 +161,16 @@ typedef struct PWMTimerCC3200_HWAttrs {
  *  The application must not access any member variables of this structure!
  */
 typedef struct PWMTimerCC3200_Object {
-    uint32_t period;
-    uint32_t duty;
-    uint8_t  dutyMode;            /* Units in which duty is specified */
-    uint8_t  cyclesPerMicroSec;
-    unsigned int powerMgrId;
+    Power_NotifyObj  postNotify;
+    unsigned int     gpioPowerMgrId;
+    unsigned int     timerPowerMgrId;
+    uint32_t         duty;
+    uint32_t         period;
+    PWM_Duty_Units   dutyUnits;
+    PWM_Period_Units periodUnits;
+    PWM_IdleLevel    idleLevel;
+    bool             pwmStarted;
+    bool             isOpen;
 } PWMTimerCC3200_Object;
 
 #ifdef __cplusplus

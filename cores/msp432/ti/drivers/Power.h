@@ -117,23 +117,37 @@ typedef struct Power_NotifyObj {
 } Power_NotifyObj;
 
 /*!
+ *  @brief  Disable the configured power policy from running when the CPU is
+ *  idle
+ *
+ *  Calling this function clears the flag that controls whether the configured
+ *  power policy function is invoked on each pass through the Idle loop.
+ *  This function call will override both a 'true' setting of the
+ *  "enablePolicy" setting in the Power manager configuration object, as well
+ *  as a previous runtime call to the Power_enablePolicy() function.
+ *
+ *  @sa     Power_enablePolicy
+ */
+void Power_disablePolicy(void);
+
+/*!
  *  @brief  Enable the configured power policy to run when the CPU is idle
  *
  *  Calling this function sets a flag that will cause the configured power
  *  policy function to be invoked on each pass through the Idle loop. This
- *  runtime function call will essentially override a 'false' setting of the
- *  "enablePolicy" setting in the Power manager configuration object.
+ *  function call will override both a 'false' setting of the "enablePolicy"
+ *  setting in the Power manager configuration object, as well as a previous
+ *  runtime call to the Power_disablePolicy() function.
  *
- *  For some processor families automatic power transitions are at odds with
- *  the debugger, and having the policy running by default makes application
- *  debug difficult.  This convenience function allows an application to be
- *  initially configured, built, and debugged, without automatic power
+ *  For some processor families, automatic power transitions can make initial
+ *  application development more difficult, as well as being at odds with
+ *  basic debugger operation.  This convenience function allows an application
+ *  to be initially configured, built, and debugged, without automatic power
  *  transitions during idle time.  When the application is found to be working,
  *  this function can be called (typically in main()) to enable the policy
- *  to run, without having to change the application configuration.  Note that
- *  there is no comparable 'disable' policy function; once the policy has
- *  been enabled to run, it will always run until the application is rebooted.
+ *  to run, without having to change the application configuration.
  *
+ *  @sa     Power_disablePolicy
  */
 void Power_enablePolicy(void);
 
@@ -444,6 +458,15 @@ void Power_setDependency(unsigned int resourceId);
  *  @sa     Power_getPerformanceLevel
  */
 unsigned int Power_setPerformanceLevel(unsigned int level);
+
+/*!
+ *  @brief  Set a new Power policy
+ *
+ *  This function allows a new Power policy function to be selected at runtime.
+ *
+ *  @param  policy      the new Power policy function
+ */
+void Power_setPolicy(Power_PolicyFxn policy);
 
 /*!
  *  @brief  Put the device into a shutdown state
