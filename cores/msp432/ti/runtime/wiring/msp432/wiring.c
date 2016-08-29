@@ -148,6 +148,9 @@ static void switchToWatchdogTimer()
         MAP_WDT_A_initIntervalTimer(WDT_A_CLOCKSOURCE_XCLK, WDT_A_CLOCKITERATIONS_8192);
     }
 
+    /* remove DEEPSLEEP0 constraint left from TimerA usage */
+    Power_releaseConstraint(PowerMSP432_DISALLOW_DEEPSLEEP_0);
+
     /* don't allow deeper than DEEPSLEEP1 */
     Power_setConstraint(PowerMSP432_DISALLOW_DEEPSLEEP_1);
 
@@ -172,6 +175,12 @@ static void switchToTimerA()
 
     /* Stop watchdog Timer */
     MAP_WDT_A_holdTimer();
+
+    /* remove DEEPSLEEP1 constraint left from watchdog usage */
+    Power_releaseConstraint(PowerMSP432_DISALLOW_DEEPSLEEP_1);
+
+    /* don't all the power to be cut in deep sleep */
+    Power_setConstraint(PowerMSP432_DISALLOW_DEEPSLEEP_0);
 
     /* Re-start Timer_A */
     clockTimer = Clock_getTimerHandle();

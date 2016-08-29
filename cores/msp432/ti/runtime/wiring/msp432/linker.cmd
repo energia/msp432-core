@@ -7,7 +7,7 @@ __TI_STACK_SIZE = __STACK_SIZE;
 
 INPUT(
     configPkg/package/cfg/energia_pm4fg.om4fg
-    ti/runtime/wiring/msp432/lib/wiring_msp432.m4fg.lib
+    /* ti/runtime/wiring/msp432/lib/wiring_msp432.m4fg.lib */
     lib/board.m4fg.lib
     ti/drivers/lib/drivers_MSP432P401R.am4fg
     ti/drivers/lib/drivers_wifi_MSP432P401R.am4fg

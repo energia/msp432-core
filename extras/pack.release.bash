@@ -39,5 +39,5 @@ stat -f%z msp432-$VERSION.tar.bz2
 read -r -p "Are you sure? [Y/n]" response
 response=$(echo "$response" | tr '[:upper:]' '[:lower:]')
 if [[ $response =~ ^(yes|y| ) ]]; then
-    scp msp432-$VERSION.tar.bz2 energia.nu:html/cores/
+    scp msp432-$VERSION.tar.bz2 robertinant@energia.nu:html/cores/
 fi
