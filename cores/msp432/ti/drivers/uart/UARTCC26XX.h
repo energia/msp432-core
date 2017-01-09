@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2015, Texas Instruments Incorporated
+ * Copyright (c) 2015-2016, Texas Instruments Incorporated
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -71,6 +71,10 @@
  *     UART_read() must be called again before FIFO goes full in order to avoid overflow.
  *   - The UART_read() supports partial return, that can be used if the
  *     receive size is unknown. See [Use Cases](@ref USE_CASES) below.
+ *   - The RingBuf serves as an extension of the FIFO. If data is received when
+ *     UART_read() is not called, data will be stored in the RingBuf. The
+ *     functionality of the RingBuf has been tested with a size of 32. This size
+ *     can be changed to suit the application.
  *   .
  * The following apply for transmit operation:
  *   - TX is enabled by calling UART_write().
@@ -116,7 +120,7 @@
  * UART_readCancel() or UART_writeCancel() to abort the operation.
  *
  * @note A new read or write will reset the UART_Object.status to UART_OK.
- *       Caution must be taken when doing parallell reads and writes.
+ *       Caution must be taken when doing parallel reads and writes.
  *
  * # Power Management @anchor POWER_MANAGEMENT #
  * The TI-RTOS power management framework will try to put the device into the most
@@ -154,9 +158,9 @@
  *
  * # Flow Control #
  * To enable Flow Control, the RTS and CTS pins must be assigned in the
- * ::UARTCC26XX_HWAttrsV1:
+ * ::UARTCC26XX_HWAttrsV2:
  *  @code
- *  const UARTCC26XX_HWAttrsV1 uartCC26xxHWAttrs[] = {
+ *  const UARTCC26XX_HWAttrsV2 uartCC26xxHWAttrs[] = {
  *      {
  *          .baseAddr    = UART0_BASE,
  *          .powerMngrId = PERIPH_UART0,
@@ -167,12 +171,14 @@
  *          .rxPin       = Board_UART_RX,
  *          .ctsPin      = Board_UART_CTS,
  *          .rtsPin      = Board_UART_RTS
+ *          .ringBufPtr  = uartCC26XXRingBuffer[0],
+ *          .ringBufSize = sizeof(uartCC26XXRingBuffer[0])
  *      }
  *  };
  *  @endcode
  *
  * If the RTS and CTS pins are set to ::PIN_UNASSIGNED, the flow control is
- * disabled. An example is shown in the ::UARTCC26XX_HWAttrsV1 description.
+ * disabled. An example is shown in the ::UARTCC26XX_HWAttrsV2 description.
  *
  * # Supported Functions #
  * | Generic API function | API function             | Description                                       |
@@ -341,6 +347,7 @@ extern "C" {
 #include <ti/drivers/UART.h>
 #include <ti/drivers/pin/PINCC26XX.h>
 #include <ti/drivers/Power.h>
+#include <ti/drivers/utils/RingBuf.h>
 #include <driverlib/uart.h>
 
 /*
@@ -436,7 +443,7 @@ extern const UART_FxnTable UARTCC26XX_fxnTable;
  *
  *  A sample structure is shown below:
  *  @code
- *  const UARTCC26XX_HWAttrsV1 uartCC26xxHWAttrs[] = {
+ *  const UARTCC26XX_HWAttrsV2 uartCC26xxHWAttrs[] = {
  *      {
  *          .baseAddr    = UART0_BASE,
  *          .powerMngrId = PERIPH_UART0,
@@ -446,14 +453,16 @@ extern const UART_FxnTable UARTCC26XX_fxnTable;
  *          .txPin       = Board_UART_TX,
  *          .rxPin       = Board_UART_RX,
  *          .ctsPin      = PIN_UNASSIGNED,
- *          .rtsPin      = PIN_UNASSIGNED
+ *          .rtsPin      = PIN_UNASSIGNED,
+ *          .ringBufPtr  = uartCC26XXRingBuffer[0],
+ *          .ringBufSize = sizeof(uartCC26XXRingBuffer[0])
  *      }
  *  };
  *  @endcode
  *
  *  The .ctsPin and .rtsPin must be assigned to enable flow control.
  */
-typedef struct UARTCC26XX_HWAttrsV1 {
+typedef struct UARTCC26XX_HWAttrsV2 {
     uint32_t     baseAddr;    /*!< UART Peripheral's base address */
     uint32_t     powerMngrId; /*!< UART Peripheral's power manager ID */
     int          intNum;      /*!< UART Peripheral's interrupt vector */
@@ -475,12 +484,14 @@ typedef struct UARTCC26XX_HWAttrsV1 {
         The minimum is 0 and the maximum is 15 by default.
         The maximum can be reduced to save RAM by adding or modifying Swi.numPriorities in the kernel configuration file.
     */
-    uint32_t     swiPriority;
-    uint8_t      txPin;       /*!< UART TX pin */
-    uint8_t      rxPin;       /*!< UART RX pin */
-    uint8_t      ctsPin;      /*!< UART CTS pin */
-    uint8_t      rtsPin;      /*!< UART RTS pin */
-} UARTCC26XX_HWAttrsV1;
+    uint32_t        swiPriority;
+    uint8_t         txPin;        /*!< UART TX pin */
+    uint8_t         rxPin;        /*!< UART RX pin */
+    uint8_t         ctsPin;       /*!< UART CTS pin */
+    uint8_t         rtsPin;       /*!< UART RTS pin */
+    unsigned char  *ringBufPtr;   /*! Pointer to an application ring buffer */
+    size_t          ringBufSize;  /*! Size of ringBufPtr */
+} UARTCC26XX_HWAttrsV2;
 
 /*!
  *  @brief    UART status
@@ -552,6 +563,7 @@ typedef struct UARTCC26XX_Object {
     size_t                readSize;           /*!< Chars remaining in buffer */
     UART_FifoThreshold    readFifoThreshold;  /*! Threshold for generating RX IRQ */
     uint8_t               writeFifoThreshold; /*! Threshold for generating TX IRQ */
+    RingBuf_Object        ringBuffer;         /*! local circular buffer object */
 
     /* PIN driver state object and handle */
     PIN_State              pinState;

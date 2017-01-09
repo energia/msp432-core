@@ -170,6 +170,7 @@ void analogWrite(uint8_t pin, int val)
 
         if (pwmIndex < PWM_AVAILABLE_PWMS) { /* fixed mapping */
             if (used_pwm_port_pins[pwmIndex] != PWM_NOT_IN_USE) {
+                Hwi_restore(hwiKey);
                 return; /* PWM port already in use */
             }
             /*
@@ -499,11 +500,10 @@ uint16_t analogRead(uint8_t pin)
     MAP_ADC14_enableConversion();
     MAP_ADC14_toggleConversionTrigger();
 
-    status = MAP_ADC14_getInterruptStatus();
-
-    while ((adcInt & status) == 0) {
+    do {
         status = MAP_ADC14_getInterruptStatus();
     }
+    while ((adcInt & status) == 0);
 
     sample = MAP_ADC14_getResult(adcMem);
 
@@ -512,7 +512,12 @@ uint16_t analogRead(uint8_t pin)
 
     Hwi_restore(hwiKey);
 
-    return (sample >> analogReadShift);
+    if (analogReadShift >= 0) {
+        return (sample >> analogReadShift);
+    }
+    else {
+        return (sample << -analogReadShift);
+    }
 }
 
 /*

@@ -163,84 +163,192 @@
  *  - Queued transactions for use in callback mode
  *
  *  ## Supported Operations ##
- *  | Operation Type                                | Description                                |
- *  |-----------------------------------------------|--------------------------------------------|
- *  | ::CRYPTOCC26XX_OP_AES_CCM_ENCRYPT             | AES-CCM encryption of AAD and plain text   |
- *  | ::CRYPTOCC26XX_OP_AES_CCM_ENCRYPT_AAD_ONLY    | AES-CCM encryption of AAD only             |
- *  | ::CRYPTOCC26XX_OP_AES_CCM_DECRYPT             | AES-CCM decryption of AAD and plain text   |
- *  | ::CRYPTOCC26XX_OP_AES_CCM_DECRYPT_AAD_ONLY    | AES-CCM decryption of AAD only             |
- *  | ::CRYPTOCC26XX_OP_AES_ECB_ENCRYPT             | AES-ECB encryption                         |
- *  | ::CRYPTOCC26XX_OP_AES_ECB_DECRYPT             | AES-ECB decryption                         |
- *  | ::CRYPTOCC26XX_OP_AES_CBC_ENCRYPT             | AES-CBC encryption                         |
- *  | ::CRYPTOCC26XX_OP_AES_CBC_DECRYPT             | AES-CBC decryption                         |
+ *  | Operation Type                                | Description                                                               |
+ *  |-----------------------------------------------|---------------------------------------------------------------------------|
+ *  | ::CRYPTOCC26XX_OP_AES_CCM_ENCRYPT             | AES-CCM encryption of plaintext and authentication of AAD and plaintext   |
+ *  | ::CRYPTOCC26XX_OP_AES_CCM_ENCRYPT_AAD_ONLY    | AES-CCM authentication of AAD only. No payload.                           |
+ *  | ::CRYPTOCC26XX_OP_AES_CCM_DECRYPT             | AES-CCM decryption of plaintext and verification of AAD and plaintext     |
+ *  | ::CRYPTOCC26XX_OP_AES_CCM_DECRYPT_AAD_ONLY    | AES-CCM verification of AAD only. No payload.                             |
+ *  | ::CRYPTOCC26XX_OP_AES_ECB_ENCRYPT             | AES-ECB encryption                                                        |
+ *  | ::CRYPTOCC26XX_OP_AES_ECB_DECRYPT             | AES-ECB decryption                                                        |
+ *  | ::CRYPTOCC26XX_OP_AES_CBC_ENCRYPT             | AES-CBC encryption                                                        |
+ *  | ::CRYPTOCC26XX_OP_AES_CBC_DECRYPT             | AES-CBC decryption                                                        |
  *
  *  ## Use Cases @anchor CRYPTO_USE_CASES ##
  *  ### AES ECB operation #
- *  Do a crypto operation with AES-ECB in ::CRYPTOCC26XX_MODE_BLOCKING.
+ *  Perform a crypto operation with AES-ECB in ::CRYPTOCC26XX_MODE_BLOCKING.
+
  *  @code
  *  // AES-ECB example struct
  *  typedef struct
  *  {
- *      uint8_t ui8AESKey[16];                      // Stores the Aes Key
- *      CryptoCC26XX_KeyLocation ui8AESKeyLocation; // Location in Key RAM
- *      uint8_t ui8AESClearText[16];                // Input message - clear text
- *      uint8_t ui8AESMsgOut[16];                   // Output message
- *      uint8_t ui8IntEnable;                       // Set to true/false to enable/
- *                                                  // disable interrupts
- *  } tAESECBExample;
+ *    uint8_t key[16];                      // Stores the Aes Key
+ *    CryptoCC26XX_KeyLocation keyLocation; // Location in Key RAM
+ *    uint8_t clearText[AES_ECB_LENGTH];    // Input message - cleartext
+ *    uint8_t msgOut[AES_ECB_LENGTH];       // Output message
+ *  } AESECBExample;
  *
  *  // AES ECB example data
- *  tAESECBExample sAESexample =
+ *  AESECBExample ecbExample =
  *  {
- *      { 0x2B, 0x7E, 0x15, 0x16, 0x28, 0xAE, 0xD2, 0xA6,
- *      0xAB, 0xF7, 0x15, 0x88, 0x09, 0xCF, 0x4F, 0x3C },
- *      CRYPTOCC26XX_KEY_0,
- *      { 0x6B, 0xC1, 0xBE, 0xE2, 0x2E, 0x40, 0x9F, 0x96,
- *      0xE9, 0x3D, 0x7E, 0x11, 0x73, 0x93, 0x17, 0x2A },
- *      { 0x3A, 0xD7, 0x7B, 0xB4, 0x0D, 0x7A, 0x36, 0x60,
- *      0xA8, 0x9E, 0xCA, 0xF3, 0x24, 0x66, 0xEF, 0x97 },
- *      true,
+ *    { 0x2B, 0x7E, 0x15, 0x16, 0x28, 0xAE, 0xD2, 0xA6,
+ *    0xAB, 0xF7, 0x15, 0x88, 0x09, 0xCF, 0x4F, 0x3C },
+ *    CRYPTOCC26XX_KEY_0,
+ *    {'t','h','i','s','i','s','a','p','l','a','i','n','t','e','x','t'},
+ *    { 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0 }
  *  };
  *
  *  // Declaration (typically done in a task)
  *  CryptoCC26XX_Handle             handle;
- *  CryptoCC26XX_Params             params;
- *  uint8_t                         keyIndex;
+ *  int32_t                         keyIndex;
+ *  int32_t							status;
  *  CryptoCC26XX_AESECB_Transaction trans;
  *
  *  // Initialize Crypto driver
  *  CryptoCC26XX_init();
  *
- *  // Configure CryptoCC26XX parameters.
- *  CryptoCC26XX_Params_init(&params);
- *
- *  // Initialize transaction
- *  CryptoCC26XX_Transac_init((CryptoCC26XX_Transaction *) &trans, CRYPTOCC26XX_OP_AES_ECB);
  *
  *  // Attempt to open CryptoCC26XX.
- *  handle = CryptoCC26XX_open(Board_CRYPTO, false, &params);
- *
+ *  handle = CryptoCC26XX_open(Board_CRYPTO, false, NULL);
  *  if (!handle) {
- *      System_printf("CryptoCC26XX did not open");
- *  } else {
- *
- *      keyIndex = CryptoCC26XX_allocateKey(handle, sAESexample.ui8AESKeyLocation,
- *                                           (const uint32_t *) sAESexample.ui8AESKey);
- *
- *      if (keyIndex != CRYPTOCC26XX_STATUS_ERROR) {
- *          // Setup transaction
- *          trans.keyIndex         = keyIndex;
- *          trans.msgIn            = (uint32_t *) sAESexample.ui8AESClearText;
- *          trans.msgOut           = (uint32_t *) sAESexample.ui8AESMsgOut;
- *
- *          // Do AES-ECB operation
- *          res = CryptoCC26XX_transact(handle, (CryptoCC26XX_Transaction *) &trans);
- *
- *          CryptoCC26XX_releaseKey(handle);
- *      } else {
- *          System_printf("Key Location was not allocated.");
- *      }
+ *    System_abort("Crypto module could not be opened.");
  *  }
+ *
+ *  keyIndex = CryptoCC26XX_allocateKey(handle, ecbExample.keyLocation,
+ *  								   (const uint32_t *) ecbExample.key);
+ *
+ *  if (keyIndex == CRYPTOCC26XX_STATUS_ERROR) {
+ *  	System_abort("Key Location was not allocated.");
+ *  }
+ *
+ *  // Initialize transaction
+ *  CryptoCC26XX_Transac_init((CryptoCC26XX_Transaction *) &trans, CRYPTOCC26XX_OP_AES_ECB_ENCRYPT);
+ *
+ *  // Setup transaction
+ *  trans.keyIndex         = keyIndex;
+ *  trans.msgIn            = (uint32_t *) ecbExample.clearText;
+ *  trans.msgOut           = (uint32_t *) ecbExample.msgOut;
+ *
+ *
+ *  // Encrypt the plaintext with AES ECB
+ *  status = CryptoCC26XX_transact(handle, (CryptoCC26XX_Transaction *) &trans);
+ *  if(status != CRYPTOCC26XX_STATUS_SUCCESS){
+ *  	System_abort("Encryption failed.");
+ *  }
+ *
+ *  // Initialize transaction
+ *  CryptoCC26XX_Transac_init((CryptoCC26XX_Transaction *) &trans, CRYPTOCC26XX_OP_AES_ECB_DECRYPT);
+ *
+ *  // Setup transaction
+ *  trans.keyIndex         = keyIndex;
+ *  trans.msgIn            = (uint32_t *) ecbExample.msgOut;
+ *  trans.msgOut           = (uint32_t *) ecbExample.clearText;
+ *
+ *  // Zero original clear text before decrypting the cypher text into the ecbExample.clearText array
+ *  memset(ecbExample.clearText, 0x0, AES_ECB_LENGTH);
+ *
+ *  // Decrypt the plaintext with AES ECB
+ *  status = CryptoCC26XX_transact(handle, (CryptoCC26XX_Transaction *) &trans);
+ *  if(status != CRYPTOCC26XX_STATUS_SUCCESS){
+ *  	System_abort("Encryption failed.");
+ *  }
+ *
+ *  CryptoCC26XX_releaseKey(handle, &keyIndex);
+ *  @endcode
+ *
+ *
+ *  ### AES CCM operation #
+ *  Perform a crypto and authentication operation with AES-CCM in ::CRYPTOCC26XX_MODE_BLOCKING.
+ *
+ *  @code
+ *  #define macLength           (4)
+ *  #define clearTextLength     (16)
+ *  #define cipherTextLength    (macLength + clearTextLength)
+ *  #define nonceLength         (12)
+ *  #define aadLength           (14)
+ *
+ *  // Holds the AES-CCM setup for this example
+ *  typedef struct
+ *  {
+ *      uint8_t key[16];                                // A 128 Bit AES key
+ *      CryptoCC26XX_KeyLocation keyLocation;           // One of 8 key locations in the hardware
+ *      uint8_t clearAndCipherText[cipherTextLength];   // Holds the cleartext before, and the ciphertext
+ *                                                      // after the encryption operation.
+ *                                                      // Ciphertext = encrypted text + message authentication code (MAC).
+ *      uint8_t nonce[nonceLength];  // A value that is used only once (cryptographic term 'nonce')
+ *      uint8_t header[aadLength];   // A header that is not encrypted but is authenticated in the operation (AAD).
+ *  } AesCcmExample;
+ *
+ *  AesCcmExample ccmSetup =
+ *  {
+ *      .key = { 0x2B, 0x7E, 0x15, 0x16, 0x28, 0xAE, 0xD2, 0xA6,
+ *               0xAB, 0xF7, 0x15, 0x88, 0x09, 0xCF, 0x4F, 0x3C },
+ *      .keyLocation = CRYPTOCC26XX_KEY_0,
+ *      .clearAndCipherText = { 't','h','i','s','i','s','a','p','l','a','i','n','t','e','x','t','0','0','0','0' },
+ *      .nonce  = { 't','h','i','s','i','s','a','n','o','n','c','e' },
+ *      .header = { 't','h','i','s','i','s','a','h','e','a','d','e','r','1' }
+ *  };
+ *
+ *  CryptoCC26XX_Handle             handle;
+ *  int32_t                         keyIndex;
+ *  CryptoCC26XX_AESCCM_Transaction trans;
+ *  int32_t                         status;
+ *
+ *  // Initialize Crypto driver structures
+ *  CryptoCC26XX_init();
+ *
+ *  // Open the crypto hardware with non-exclusive access and default parameters.
+ *  handle = CryptoCC26XX_open(Board_CRYPTO, false, NULL);
+ *  if (handle == NULL) {
+ *      System_abort("CryptoCC26XX did not open");
+ *  }
+ *
+ *  // Allocate a key storage location in the hardware
+ *  keyIndex = CryptoCC26XX_allocateKey(handle, ccmSetup.keyLocation, (const uint32_t *) ccmSetup.key);
+ *  if (keyIndex == CRYPTOCC26XX_STATUS_ERROR) {
+ *      System_abort("Key Location was not allocated.");
+ *  }
+ *
+ *  // Encrypt and authenticate the message
+ *  CryptoCC26XX_Transac_init((CryptoCC26XX_Transaction *) &trans, CRYPTOCC26XX_OP_AES_CCM);
+ *  trans.keyIndex   = keyIndex;
+ *  trans.authLength = macLength;
+ *  trans.nonce  = (char *) ccmSetup.nonce;
+ *  trans.header = (char *) ccmSetup.header;
+ *  trans.fieldLength  = 3;
+ *  trans.msgInLength  = clearTextLength;
+ *  trans.headerLength = aadLength;
+ *  trans.msgIn  = (char *) &(ccmSetup.clearAndCipherText[0]);                // Message is encrypted in place
+ *  trans.msgOut = (char *) &(ccmSetup.clearAndCipherText[clearTextLength]);  // MAC will be written to this position
+ *  status = CryptoCC26XX_transact(handle, (CryptoCC26XX_Transaction *) &trans);
+ *  if (status != CRYPTOCC26XX_STATUS_SUCCESS) {
+ *      System_abort("Encryption and signing failed.");
+ *  }
+ *
+ *  // Decrypt and authenticate message
+ *  CryptoCC26XX_Transac_init((CryptoCC26XX_Transaction *) &trans, CRYPTOCC26XX_OP_AES_CCMINV);
+ *  trans.keyIndex   = keyIndex;
+ *  trans.authLength = macLength;
+ *  trans.nonce  = (char *) ccmSetup.nonce;
+ *  trans.header = (char *) ccmSetup.header;
+ *  trans.fieldLength  = 3;
+ *  trans.msgInLength  = cipherTextLength;
+ *  trans.headerLength = aadLength;
+ *  trans.msgIn  = (char *) &(ccmSetup.clearAndCipherText[0]);                // Message is decrypted in place
+ *  trans.msgOut = (char *) &(ccmSetup.clearAndCipherText[clearTextLength]);  // Points to the MAC, is used as input here
+ *
+ *  // Do AES-CCM decryption and authentication
+ *  status = CryptoCC26XX_transact(handle, (CryptoCC26XX_Transaction *) &trans);
+ *  if(status != CRYPTOCC26XX_STATUS_SUCCESS){
+ *      System_abort("Decryption and authentication failed.");
+ *  }
+ *
+ *  // Release the key location
+ *  status = CryptoCC26XX_releaseKey(handle, &keyIndex);
+ *  if (status != CRYPTOCC26XX_STATUS_SUCCESS) {
+ *      System_abort("Key release was not successful.");
+ *  }
+ *
  *  @endcode
  *
  *  # Instrumentation #
@@ -302,9 +410,9 @@ extern "C" {
 #define CRYPTOCC26XX_STATUS_UNDEFINEDCMD  -2  /*!< Command Undefined Return Code */
 
 #define CRYPTOCC26XX_OP_AES_CCM_ENCRYPT             0   /*!< AES-CCM encryption of both AAD and plain text */
-#define CRYPTOCC26XX_OP_AES_CCM_ENCRYPT_AAD_ONLY    1   /*!< AES-CCM encryption of ADD only */
-#define CRYPTOCC26XX_OP_AES_CCM_DECRYPT             2   /*!< AES-CCM decryption of both AAD and plain text */
-#define CRYPTOCC26XX_OP_AES_CCM_DECRYPT_AAD_ONLY    3   /*!< AES-CCM decryption of ADD only */
+#define CRYPTOCC26XX_OP_AES_CCM_ENCRYPT_AAD_ONLY    1   /*!< AES-CCM authentication of ADD only */
+#define CRYPTOCC26XX_OP_AES_CCM_DECRYPT             2   /*!< AES-CCM decryption of both AAD and plain text and verification of both */
+#define CRYPTOCC26XX_OP_AES_CCM_DECRYPT_AAD_ONLY    3   /*!< AES-CCM verification of ADD only */
 #define CRYPTOCC26XX_OP_AES_ECB_ENCRYPT             4   /*!< AES-ECB encryption */
 #define CRYPTOCC26XX_OP_AES_ECB_DECRYPT             5   /*!< AES-ECB decryption */
 #define CRYPTOCC26XX_OP_AES_CBC_ENCRYPT             6   /*!< AES-CBC encryption */
@@ -360,7 +468,7 @@ typedef enum CryptoCC26XX_Mode {
  *  Currently supported types are
  *
  *  | Encryption                                    | Decryption                                    |
- *  |-----------------------------------------------------------------------------------------------|
+ *  |-----------------------------------------------|-----------------------------------------------|
  *  | ::CRYPTOCC26XX_OP_AES_CCM_ENCRYPT             | ::CRYPTOCC26XX_OP_AES_CCM_DECRYPT             |
  *  | ::CRYPTOCC26XX_OP_AES_CCM_ENCRYPT_AAD_ONLY    | ::CRYPTOCC26XX_OP_AES_CCM_DECRYPT_AAD_ONLY    |
  *  | ::CRYPTOCC26XX_OP_AES_ECB_ENCRYPT             | ::CRYPTOCC26XX_OP_AES_ECB_DECRYPT             |
@@ -419,21 +527,76 @@ typedef struct CryptoCC26XX_Transaction {
 /*!
  *  @brief  CryptoCC26XX AES-CCM Transaction
  *
- *  This structure defines the nature of the AES-CCM transaction. An object of this structure must
- *  be initialized by calling CryptoCC26XX_Transac_init().
+ *  The Counter with CBC-MAC (CCM) mode of operation is a generic
+ *  authenticated encryption block cipher mode.  It can be used with
+ *  any 128-bit block cipher.
+ *  AES-CCM combines CBC-MAC with an AES block cipher.
+ *
+ *  AES-CCM encryption has the following inputs and outputs:
+ *
+ * <table>
+ * <caption id="multi_row">AES-CCM input and output parameters</caption>
+ * <tr><th>Encryption</th><th>Decryption</th></tr>
+ * <tr><th colspan=2>Input</th></tr>
+ * <tr><td>Shared AES key</td><td> Shared AES key</td></tr>
+ * <tr><td>Nonce</td><td>Nonce</td></tr>
+ * <tr><td>Cleartext</td><td>Ciphertext (encrypted cleartext + MAC)</td></tr>
+ * <tr><td>AAD (optional)</td><td>AAD (optional)</td></tr>
+ * <tr><th colspan=2>Output</th></tr>
+ * <tr><td>Ciphertext (encrypted cleartext + MAC)</td><td>Cleartext</td></tr>
+ * </table>
+ *
+ *  The AES key is a shared secret between the two parties and has a length
+ *  of 128 Bit.  The key is stored in the dedicated RAM of the AES hardware
+ *  unit before the crypto operation.
+ *
+ *  The nonce is generated by the party performing the authenticated
+ *  encryption operation.  Within the scope of any authenticated
+ *  encryption key, the nonce value must be unique.  That is, the set of
+ *  nonce values used with any given key must not contain any duplicate
+ *  values.  Using the same nonce for two different messages encrypted
+ *  with the same key destroys the security properties.
+ *
+ *  The optional AAD is authenticated, but not encrypted.  Thus, the AAD
+ *  is not included in the AES-CCM output.  It can be used to authenticate
+ *  packet headers for transport layer security.
+ *
+ *  After the encryption operation, the ciphertext contains the encrypted
+ *  data and the message authentication code (MAC). The MAC can be seen as an
+ *  encrypted fingerprint of the message header and content.
+ *
+ *  AES-CCM works in both ways: encryption and decryption. When a message is
+ *  decrypted, then ciphertext, AAD and nonce are used as inputs while
+ *  the output comprises the cleartext only.  The decryption operation is
+ *  successful, when the received ciphertext, the nonce and the AAD
+ *  can reproduce the containing MAC.
+ *
+ *  The CryptoCC26XX_AESCCM_Transaction structure defines all necessary
+ *  parameters for a AES-CCM transaction.
  */
 typedef struct CryptoCC26XX_AESCCM_Transaction {
     CryptoCC26XX_Operation  opType;         /*!< The type of the crypto operation */
     CryptoCC26XX_Mode       mode;           /*!< The mode of current transaction. Set by transact function. */
     uint8_t                 keyIndex;       /*!< The key store index to be used */
-    uint8_t                 authLength;     /*!< Is the the length of the authentication field - */
+    uint8_t                 authLength;     /*!< Is the the length of the authentication field */
                                             /*!< 0, 2, 4, 6, 8, 10, 12, 14 or 16 octets. */
     char                   *nonce;          /*!< A pointer to 13-byte or 12-byte Nonce. */
-    char                   *msgIn;          /*!< A pointer to the octet string input message */
-    char                   *header;         /*!< The Additional Authentication Data or AAD */
-    void                   *msgOut;         /*!< A pointer to the output message location */
-    uint8_t                 fieldLength;    /*!< The size of the length field (2 or 3) */
-    uint16_t                msgInLength;    /*!< The length of the message */
+    char                   *msgIn;          /*!<
+                                                 - Encryption: A pointer to the octet string input message and after the transaction,
+                                                   the location of the encrypted cleartext. The cleatext is encrypted in place.
+                                                 - Decryption:  A pointer to the encrypted ciphertext composed of the encrypted cleartext
+                                                   concatenated with the encrypted message authentication code.*/
+
+    char                   *header;         /*!< The Additional Authentication Data (AAD). This header is authenticated but not encrypted. */
+    void                   *msgOut;         /*!< A pointer to the encrypted CBC-MAC */
+    uint8_t                 fieldLength;    /*!< Encoded length of the nonce.
+                                                 |fieldLength    | nonce length     |
+                                                 |---------------|------------------|
+                                                 |2              | 13 byte nonce    |
+                                                 |3              | 12 byte nonce    |
+                                            */
+    uint16_t                msgInLength;    /*!< - Encryption:  The length of the cleartext.
+                                                 - Decryption: The length of the ciphertext. */
     uint16_t                headerLength;   /*!< The length of the header in octets */
 } CryptoCC26XX_AESCCM_Transaction;
 
@@ -636,6 +799,7 @@ void CryptoCC26XX_Transac_init(CryptoCC26XX_Transaction *trans, CryptoCC26XX_Ope
  *  write a key into one of the keystore RAM entries and returns a key index integer
  *  to the calling client. The allocated key index shall be used when building a
  *  transaction data object, e.g. ::CryptoCC26XX_AESCCM_Transaction.keyIndex.
+ *  The function blocks the task calling it until the crypto hardware is available.
  *
  *  @pre    CryptoCC26XX_open() has to be called first.
  *          Calling context: Hwi, Swi and Task.
@@ -663,6 +827,7 @@ int CryptoCC26XX_allocateKey(CryptoCC26XX_Handle handle, CryptoCC26XX_KeyLocatio
  *
  *  This function loads a key into a keystore without needing to release the key store and
  *  re-allocate it using CryptoCC26XX_releaseKey() and  CryptoCC26XX_allocateKey().
+ *  The function blocks the task calling it until the crypto hardware is available.
  *
  *  @pre    CryptoCC26XX_open() and CryptoCC26XX_allocateKey() have to be called first.
  *          Calling context: Hwi, Swi and Task.

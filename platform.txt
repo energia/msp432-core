@@ -5,7 +5,8 @@
 # https://github.com/arduino/Arduino/wiki/Arduino-IDE-1.5-3rd-party-Hardware-specification
 
 name=Energia MSP432 (32-bits) Boards
-version=1.3.3
+version=3.8.0
+version.string=380
 
 # MSP432 compile variables
 # ----------------------
@@ -18,13 +19,13 @@ compiler.warning_flags.all=-Wall -Wextra
 
 compiler.path={runtime.tools.arm-none-eabi-gcc.path}/bin/
 compiler.c.cmd=arm-none-eabi-gcc
-compiler.c.flags=-c -g -Os {compiler.warning_flags} -ffunction-sections -fdata-sections
+compiler.c.flags=-c -g -Os {compiler.warning_flags} -ffunction-sections -fdata-sections -MMD
 compiler.cpp.elf.cmd=arm-none-eabi-g++
 compiler.c.elf.flags=-Os -Wl,--gc-sections
 compiler.S.cmd=arm-none-eabi-gcc
 compiler.S.flags=-c -g -x assembler-with-cpp
 compiler.cpp.cmd=arm-none-eabi-g++
-compiler.cpp.flags=-c -g -Os {compiler.warning_flags} -ffunction-sections -fdata-sections -fno-threadsafe-statics -fno-rtti -fno-exceptions
+compiler.cpp.flags=-c -g -Os {compiler.warning_flags} -ffunction-sections -fdata-sections -fno-threadsafe-statics -fno-rtti -fno-exceptions -MMD
 compiler.ar.cmd=arm-none-eabi-ar
 compiler.ar.flags=rcs
 compiler.objcopy.cmd=arm-none-eabi-objcopy
@@ -38,7 +39,7 @@ compiler.driverlib.c.flags="-I{build.system.path}/driverlib/MSP432P4xx" "-I{buil
 compiler.emt.c.flags="-I{build.core.path}/ti/runtime/wiring/" "-I{build.core.path}/ti/runtime/wiring/msp432"
 
 # this can be overriden in boards.txt
-build.extra_flags=-mcpu=cortex-m4 -mthumb -mfloat-abi=hard -mfpu=fpv4-sp-d16 -mabi=aapcs -g -Dxdc_target_types__=gnu/targets/arm/std.h -Dxdc_target_name__=M4F -Dxdc_cfg__xheader__="configPkg/package/cfg/energia_pm4fg.h" -DTARGET_IS_MSP432P4XX -DBOARD_MSP_EXP432P401R -Dxdc__nolocalstring=1 -D__MSP432P401R__
+build.extra_flags=-mcpu=cortex-m4 -mthumb -mfloat-abi=hard -mfpu=fpv4-sp-d16 -mabi=aapcs -g -Dxdc_target_types__=gnu/targets/arm/std.h -Dxdc_target_name__=M4F -Dxdc_cfg__xheader__="configPkg/package/cfg/energia_pm4fg.h" -DTARGET_IS_MSP432P4XX -DBOARD_MSP_EXP432P401R -Dxdc__nolocalstring=1 -D__MSP432P401R__ -DCORE_VERSION={version.string}
 
 # These can be overridden in platform.local.txt
 compiler.c.extra_flags={compiler.emt.c.flags} {compiler.driverlib.c.flags}

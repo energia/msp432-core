@@ -211,14 +211,22 @@
  *  data frames. A data frame can be 4 to 16 bits in length.
  *
  *  ### Scratch Buffers #
- *  A uint32_t scratch buffer is used to allow SPI_transfers where txBuf or rxBuf
+ *  A uint16_t scratch buffer is used to allow SPI_transfers where txBuf or rxBuf
  *  are NULL. Rather than requiring txBuf or rxBuf to have a dummy buffer of size
- *  of the transfer count, a single UDMA accessible uint32_t scratch buffer is used.
- *  When rxBuf is NULL, the UDMA will transfer all the SPI data receives into the
+ *  of the transfer count, a single-word UDMA accessible uint16_t scratch buffer is used.
+ *  When rxBuf is NULL, the UDMA will transfer all the received SPI data into the
  *  scratch buffer as a "bit-bucket".
- *  When rxBuf is NULL, the scratch buffer is initialized to defaultTxBufValue
+ *  When txBuf is NULL, the scratch buffer is initialized to defaultTxBufValue
  *  so the uDMA will send some known value.
  *  Each SPI driver instance uses its own scratch buffer.
+ *
+ *  ### TX and RX buffers #
+ *  Before SPI_transfer, txBuf should be filled with the outgoing SPI data. These
+ *  data are sent out during the transfer, while the incoming data are received
+ *  into rxBuf. To save memory space, txBuf and rxBuf can be assigned to the same
+ *  buffer location. At the beginning of the transfer, this buffer holds outgoing
+ *  data. At the end of the transfer, the outgoing data are overwritten and
+ *  the buffer holds the received SPI data.
  *
  * # Supported Functions #
  * | Generic API function  | API function                   | Description                                                 |

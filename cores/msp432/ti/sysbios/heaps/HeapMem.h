@@ -337,10 +337,20 @@ __extern xdc_Void ti_sysbios_heaps_HeapMem_leave__E( xdc_IArg key );
 xdc__CODESECT(ti_sysbios_heaps_HeapMem_alloc__E, "ti_sysbios_heaps_HeapMem_alloc")
 __extern xdc_Ptr ti_sysbios_heaps_HeapMem_alloc__E( ti_sysbios_heaps_HeapMem_Handle __inst, xdc_SizeT size, xdc_SizeT align, xdc_runtime_Error_Block *eb );
 
+/* allocUnprotected__E */
+#define ti_sysbios_heaps_HeapMem_allocUnprotected ti_sysbios_heaps_HeapMem_allocUnprotected__E
+xdc__CODESECT(ti_sysbios_heaps_HeapMem_allocUnprotected__E, "ti_sysbios_heaps_HeapMem_allocUnprotected")
+__extern xdc_Ptr ti_sysbios_heaps_HeapMem_allocUnprotected__E( ti_sysbios_heaps_HeapMem_Handle __inst, xdc_SizeT size, xdc_SizeT align );
+
 /* free__E */
 #define ti_sysbios_heaps_HeapMem_free ti_sysbios_heaps_HeapMem_free__E
 xdc__CODESECT(ti_sysbios_heaps_HeapMem_free__E, "ti_sysbios_heaps_HeapMem_free")
 __extern xdc_Void ti_sysbios_heaps_HeapMem_free__E( ti_sysbios_heaps_HeapMem_Handle __inst, xdc_Ptr block, xdc_SizeT size );
+
+/* freeUnprotected__E */
+#define ti_sysbios_heaps_HeapMem_freeUnprotected ti_sysbios_heaps_HeapMem_freeUnprotected__E
+xdc__CODESECT(ti_sysbios_heaps_HeapMem_freeUnprotected__E, "ti_sysbios_heaps_HeapMem_freeUnprotected")
+__extern xdc_Void ti_sysbios_heaps_HeapMem_freeUnprotected__E( ti_sysbios_heaps_HeapMem_Handle __inst, xdc_Ptr block, xdc_SizeT size );
 
 /* isBlocking__E */
 #define ti_sysbios_heaps_HeapMem_isBlocking ti_sysbios_heaps_HeapMem_isBlocking__E
@@ -573,7 +583,9 @@ struct ti_sysbios_heaps_HeapMem_Object {
 #define HeapMem_enter ti_sysbios_heaps_HeapMem_enter
 #define HeapMem_leave ti_sysbios_heaps_HeapMem_leave
 #define HeapMem_alloc ti_sysbios_heaps_HeapMem_alloc
+#define HeapMem_allocUnprotected ti_sysbios_heaps_HeapMem_allocUnprotected
 #define HeapMem_free ti_sysbios_heaps_HeapMem_free
+#define HeapMem_freeUnprotected ti_sysbios_heaps_HeapMem_freeUnprotected
 #define HeapMem_isBlocking ti_sysbios_heaps_HeapMem_isBlocking
 #define HeapMem_getStats ti_sysbios_heaps_HeapMem_getStats
 #define HeapMem_restore ti_sysbios_heaps_HeapMem_restore

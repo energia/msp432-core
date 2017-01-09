@@ -43,34 +43,50 @@ unsigned long pulseIn(uint8_t pin, uint8_t state, unsigned long timeout)
 {
     uint8_t stateMask;
     uint32_t start, end, result;
+    uint32_t numloops;
+    uint32_t microsTime;
+    static bool firstTime = true;
+    static uint32_t loopTime;
+
+    /* measure GPIO_read() time */
+    if (firstTime == true) {
+        microsTime = micros();
+        microsTime = micros() - microsTime;
+        loopTime = micros();
+        GPIO_read(pin);
+        loopTime = micros() - loopTime - microsTime;
+        if (loopTime == 0) loopTime = 1;
+        firstTime = false;
+    }
 
     stateMask = state ? 1 : 0;
 
-    // convert the timeout from microseconds to a number of times through
-    // the initial loop; it takes 11 clock cycles per iteration.
-    unsigned long numloops = 0;
-    unsigned long maxloops = microsecondsToClockCycles(timeout) / 11;
+    /* loopTime is mostly GPIO_read() */
+    numloops = timeout / loopTime;
 
     // wait for any previous pulse to end
-    while (GPIO_read(pin) == stateMask)
-        if (numloops++ == maxloops) {
+    while (GPIO_read(pin) == stateMask) {
+        if (numloops-- == 0) {
             return (0);
         }
+    }
 
     // wait for the pulse to start
-    while (GPIO_read(pin) != stateMask)
-        if (numloops++ == maxloops) {
+    while (GPIO_read(pin) != stateMask) {
+        if (numloops-- == 0) {
             return (0);
         }
+    }
 
     // wait for the pulse to stop
     start = micros();
 
     while (GPIO_read(pin) == stateMask) {
-        if (numloops++ == maxloops) {
+        if (numloops-- == 0) {
             return (0);
         }
     }
+
     end = micros();
     result = end - start;
 

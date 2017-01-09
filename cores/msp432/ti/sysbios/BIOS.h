@@ -103,7 +103,7 @@ typedef enum ti_sysbios_BIOS_LibType ti_sysbios_BIOS_LibType;
 typedef xdc_Void (*ti_sysbios_BIOS_StartupFuncPtr)(xdc_Void);
 
 /* version */
-#define ti_sysbios_BIOS_version (0x64600)
+#define ti_sysbios_BIOS_version (0x64601)
 
 
 /*

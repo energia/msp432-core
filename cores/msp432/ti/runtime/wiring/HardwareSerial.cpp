@@ -40,32 +40,36 @@
 #include "HardwareSerial.h"
 
 #define RX_BUFFER_EMPTY   (rxReadIndex == rxWriteIndex)
-#define RX_BUFFER_FULL    (((rxWriteIndex + 1) % SERIAL_BUFFER_SIZE) == rxReadIndex)
+#define RX_BUFFER_FULL    (((rxWriteIndex + 1) % SERIAL_RX_BUFFER_SIZE) == rxReadIndex)
+
+#define TX_BUFFER_EMPTY   (txReadIndex == txWriteIndex)
+#define TX_BUFFER_FULL    (((txWriteIndex + 1) % SERIAL_TX_BUFFER_SIZE) == txReadIndex)
 
 HardwareSerial::HardwareSerial(void)
 {
-    init(0, NULL);
+    init(0, NULL, NULL);
 }
 
 HardwareSerial::HardwareSerial(unsigned long module)
 {
-    init(module, NULL);
+    init(module, NULL, NULL);
 }
 
-HardwareSerial::HardwareSerial(unsigned long module, UART_Callback callback)
+HardwareSerial::HardwareSerial(unsigned long module, UART_Callback rCallback, UART_Callback tCallback)
 {
-    init(module, callback);
+    init(module, rCallback, tCallback);
 }
 
 /*
  * Private Methods
  */
-void HardwareSerial::init(unsigned long module, UART_Callback callback)
+void HardwareSerial::init(unsigned long module, UART_Callback rCallback, UART_Callback tCallback)
 {
-    rxCallback = callback;
+    rxCallback = rCallback;
+    txCallback = tCallback;
 
-    rxWriteIndex = 0;
-    rxReadIndex = 0;
+    /* by default, read() will not block */
+    blockingModeEnabled = false;
 
     uartModule = module;
     begun = false;
@@ -84,35 +88,48 @@ void HardwareSerial::begin(unsigned long baud)
 
     if (begun == TRUE) return;
 
-    Semaphore_construct(&rxSemaphore, 0, NULL);
-
     baudRate = baud;
 
     UART_Params_init(&uartParams);
-    uartParams.writeMode = UART_MODE_BLOCKING;
-    uartParams.writeDataMode = UART_DATA_BINARY;
-    if (rxCallback != NULL) {
-        uartParams.readMode = UART_MODE_CALLBACK;
-        uartParams.readCallback = rxCallback;
+
+    if (blockingModeEnabled == true) {
+        uartParams.readMode = UART_MODE_BLOCKING;
+        uartParams.writeMode = UART_MODE_BLOCKING;
     }
     else {
-        uartParams.readMode = UART_MODE_BLOCKING;
+        uartParams.readMode = UART_MODE_CALLBACK;
+        uartParams.readCallback = rxCallback;
+        uartParams.writeMode = UART_MODE_CALLBACK;
+        uartParams.writeCallback = txCallback;
+        rxWriteIndex = 0;
+        rxReadIndex = 0;
+        txWriteIndex = 0;
+        txReadIndex = 0;
+        txActive = false;
     }
+
     uartParams.readDataMode = UART_DATA_BINARY;
     uartParams.readReturnMode = UART_RETURN_FULL;
     uartParams.readEcho = UART_ECHO_OFF;
+    uartParams.writeDataMode = UART_DATA_BINARY;
     uartParams.baudRate = baud;
 
     uart = Board_openUART(uartModule, &uartParams);
 
     if (uart != NULL) {
         GateMutex_construct(&gate, NULL);
-        if (rxCallback != NULL) {
+        if (blockingModeEnabled == false) {
             /* start the read process */
             UART_read(uart, &rxBuffer[rxWriteIndex], 1);
         }
         begun = TRUE;
     }
+}
+
+void HardwareSerial::begin(unsigned long baud, bool blockModeEnabled)
+{
+    blockingModeEnabled = blockModeEnabled;
+    begin(baud);
 }
 
 void HardwareSerial::setModule(unsigned long module)
@@ -151,9 +168,18 @@ int HardwareSerial::available(void)
         return (0);
     }
 
-    if (rxCallback != NULL) {
+    if (blockingModeEnabled == true) {
+        if (UART_control(uart, UART_CMD_GETRXCOUNT, (void *)&numChars)
+         == UART_STATUS_SUCCESS) {
+            return (numChars);
+        }
+        else {
+            return (0);
+        }
+    }
+    else {
         unsigned int key;
-    
+
         key = Hwi_disable();
 
         if (RX_BUFFER_EMPTY) {
@@ -163,32 +189,32 @@ int HardwareSerial::available(void)
 
         numChars = (rxWriteIndex >= rxReadIndex) ?
             (rxWriteIndex - rxReadIndex)
-            : SERIAL_BUFFER_SIZE - (rxReadIndex - rxWriteIndex);
+            : SERIAL_RX_BUFFER_SIZE - (rxReadIndex - rxWriteIndex);
 
         Hwi_restore(key);
 
         return (numChars);
-    }
-    else {
-        if (UART_control(uart, UART_CMD_GETRXCOUNT, (void *)&numChars)
-            == UART_STATUS_SUCCESS) {
-            return (numChars);
-        }
-        else {
-            return (0);
-        }
     }
  }
 
 int HardwareSerial::peek(void)
 {
     int iChar;
-	
+
     if (uart == NULL) {
         return (-1);
     }
 
-    if (rxCallback != NULL) {
+    if (blockingModeEnabled == true) {
+        if (UART_control(uart, UART_CMD_PEEK, (void *)&iChar)
+             == UART_STATUS_SUCCESS) {
+            return (iChar);
+        }
+        else {
+            return (-1);
+        }
+    }
+    else {
         if (available() == 0) {
             return (-1);
         }
@@ -198,15 +224,6 @@ int HardwareSerial::peek(void)
 
         /* Return the character to the caller. */
         return (iChar);
-    }
-    else {
-        if (UART_control(uart, UART_CMD_PEEK, (void *)&iChar)
-             == UART_STATUS_SUCCESS) {
-            return (iChar);
-        }
-        else {
-            return (-1);
-        }
     }
 }
 
@@ -218,23 +235,23 @@ int HardwareSerial::read(void)
         return (0);
     }
 
-    if (rxCallback != NULL) {
-        unsigned int hwiKey;
-
-        while ((iChar = peek()) < 0) {
-            Semaphore_pend(Semaphore_handle(&rxSemaphore), BIOS_WAIT_FOREVER);
-        }
-
-        hwiKey = Hwi_disable();
-
-        rxReadIndex = ((rxReadIndex) + 1) % SERIAL_BUFFER_SIZE;
-
-        Hwi_restore(hwiKey);
-
+    if (blockingModeEnabled == true) {
+        UART_read(uart, &iChar, 1);
         return (iChar);
     }
     else {
-        UART_read(uart, &iChar, 1);
+        unsigned int hwiKey;
+
+        hwiKey = Hwi_disable();
+
+        iChar = peek();
+
+        /* if a character is available, update buffer ptrs */
+        if (iChar != -1) {
+            rxReadIndex = ((rxReadIndex) + 1) % SERIAL_RX_BUFFER_SIZE;
+        }
+
+        Hwi_restore(hwiKey);
 
         return (iChar);
     }
@@ -242,6 +259,9 @@ int HardwareSerial::read(void)
 
 void HardwareSerial::flush()
 {
+    if (blockingModeEnabled == false) {
+        while (txActive) ;
+    }
 }
 
 HardwareSerial::operator bool()
@@ -249,52 +269,115 @@ HardwareSerial::operator bool()
     return true;  // Arduino compatibility (see StringLength example)
 }
 
-
 size_t HardwareSerial::write(uint8_t c)
 {
-    IArg key;
-
-    if (uart == NULL) {
-        return (0);
-    }
-
-    key = GateMutex_enter(GateMutex_handle(&gate));
-
-    UART_write(uart, (char *)&c, 1);
-
-    GateMutex_leave(GateMutex_handle(&gate), key);
-
-    return (1);
+    return (write(&c, 1));
 }
 
 size_t HardwareSerial::write(const uint8_t *buffer, size_t size)
 {
-    IArg key;
-    
-    if (uart == NULL) {
+    if (uart == NULL || size == 0) {
         return (0);
     }
 
-    key = GateMutex_enter(GateMutex_handle(&gate));
-
-    UART_write(uart, (char *)buffer, size);
-
-    GateMutex_leave(GateMutex_handle(&gate), key);
+    if (blockingModeEnabled == true) {
+        IArg key;
+        key = GateMutex_enter(GateMutex_handle(&gate));
+        UART_write(uart, (char *)buffer, size);
+        GateMutex_leave(GateMutex_handle(&gate), key);
+    }
+    else {
+        unsigned int hwiKey;
+        while (size) {
+            while (TX_BUFFER_FULL) {
+                if (txActive == false) {
+                    primeTx();
+                }
+            }
+            hwiKey = Hwi_disable();
+            txBuffer[txWriteIndex] = *buffer++;
+            txWriteIndex = (txWriteIndex + 1) % SERIAL_TX_BUFFER_SIZE;
+            size--;
+            Hwi_restore(hwiKey);
+        }
+        if ((txActive == false) && (!TX_BUFFER_EMPTY)) {
+            primeTx();
+        }
+    }
 
     return (size);
+}
+
+void HardwareSerial::primeTx(void) {
+    unsigned int hwiKey;
+    size_t size;
+
+    hwiKey = Hwi_disable();
+
+    /*
+     * txActive might have become true if an interrupt
+     * that calls Serial.print() has occurred just prior
+     * to the call to primeTx().
+     */
+    if (txActive == true) {
+        Hwi_restore(hwiKey);
+        return;
+    }
+    
+    if (txWriteIndex > txReadIndex) {
+        size = txWriteIndex - txReadIndex;
+    }
+    else {
+        size = SERIAL_TX_BUFFER_SIZE - txReadIndex;
+    }
+
+    txActive = true;
+
+    Hwi_restore(hwiKey);
+
+    UART_write(uart, &txBuffer[txReadIndex], size);
 }
 
 void HardwareSerial::readCallback(UART_Handle uart, void *buf, size_t count)
 {
     uint8_t volatile full = RX_BUFFER_FULL;
 
-    rxWriteIndex = ((rxWriteIndex) + 1) % SERIAL_BUFFER_SIZE;
+    rxWriteIndex = ((rxWriteIndex) + 1) % SERIAL_RX_BUFFER_SIZE;
 
     if (full) {
-        rxReadIndex = ((rxReadIndex) + 1) % SERIAL_BUFFER_SIZE;
+        rxReadIndex = ((rxReadIndex) + 1) % SERIAL_RX_BUFFER_SIZE;
+    }
+}
+
+void HardwareSerial::writeCallback(UART_Handle uart, void *buf, size_t txCount)
+{
+    unsigned int hwiKey;
+    size_t size;
+
+    hwiKey = Hwi_disable();
+
+    /*
+     * advance txReadIndex by the number of bytes
+     * sent by the last call to UART_write().
+     */
+    txReadIndex = (txReadIndex + txCount) % SERIAL_TX_BUFFER_SIZE;
+
+    if (TX_BUFFER_EMPTY) {
+        txActive = false;
+        Hwi_restore(hwiKey);
+        return;
     }
 
-    Semaphore_post(Semaphore_handle(&rxSemaphore));
+    if (txWriteIndex > txReadIndex) {
+        size = txWriteIndex - txReadIndex;
+    }
+    else {
+        size = SERIAL_TX_BUFFER_SIZE - txReadIndex;
+    }
+
+    Hwi_restore(hwiKey);
+
+    UART_write(uart, &txBuffer[txReadIndex], size);
 }
 
 void serialEvent() __attribute__((weak));

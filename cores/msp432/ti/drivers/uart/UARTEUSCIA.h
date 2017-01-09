@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2015, Texas Instruments Incorporated
+ * Copyright (c) 2015-2016, Texas Instruments Incorporated
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -58,7 +58,11 @@ extern "C" {
 #include <stdint.h>
 #include <ti/drivers/UART.h>
 
+#include <ti/sysbios/knl/Clock.h>
 #include <ti/sysbios/knl/Semaphore.h>
+
+#include <ti/drivers/utils/RingBuf.h>
+
 
 /**
  *  @addtogroup UART_STATUS
@@ -90,6 +94,32 @@ extern "C" {
 
 /* UARTEUSCIA function table pointer */
 extern const UART_FxnTable UARTEUSCIA_fxnTable;
+
+/*!
+ *  @brief Complement set of read functions to be used by the UART ISR and
+ *         UARTEUSCIA_read(). Internal use only.
+ *
+ *  These functions should not be used by the user and are solely intended for
+ *  the UARTEUSCIA driver.
+ *  The UARTEUSCIA_FxnSet is a pair of functions that are designed to
+ *  operate with one another in a task context and in an ISR context. The
+ *  readTaskFxn is called by UARTEUSCIA_read() to drain a circular buffer,
+ *  whereas the readIsrFxn is used by the UARTEUSCIA_hwiIntFxn to fill up the
+ *  circular buffer.
+ *
+ *  readTaskFxn:    Function called by UART read
+ *                  These variables are set and available for use to the
+ *                  readTaskFxn.
+ *                  object->readBuf = buffer; //Pointer to a user buffer
+ *                  object->readSize = size;  //Desired no. of bytes to read
+ *                  object->readCount = size; //Remaining no. of bytes to read
+ *
+ *  readIsrFxn:     The required ISR counterpart to readTaskFxn
+ */
+typedef struct UARTEUSCIA_FxnSet {
+    bool (*readIsrFxn)  (UART_Handle handle);
+    int  (*readTaskFxn) (UART_Handle handle);
+} UARTEUSCIA_FxnSet;
 
 /*!
  *  @brief      UARTEUSCIA Baudrate configuration
@@ -152,13 +182,17 @@ typedef struct UARTEUSCIA_BaudrateConfig {
  *      {9600,    32768,            3,     0,      3,      0},
  *  };
  *
- *  const UARTEUSCIA_HWAttrs uartUSCIAHWAttrs[] = {
+ *  unsigned char uartMSP432RingBuffer[2][32];
+ *
+ *  const UARTEUSCIA_HWAttrsV1 uartUSCIAHWAttrs[] = {
  *      {
  *          .baseAddr = EUSCI_A0_BASE,
  *          .clockSource = EUSCI_A_UART_CLOCKSOURCE_SMCLK,
  *          .bitOrder = EUSCI_A_UART_LSB_FIRST,
  *          .numBaudrateEntries = sizeof(uartUSCIABaudrates/UARTEUSCIA_BaudrateConfig),
  *          .baudrateLUT = uartUSCIABaudrates
+ *          .ringBufPtr  = uartMSP432RingBuffer[0],
+ *          .ringBufSize = sizeof(uartMSP432RingBuffer[0])
  *      },
  *      {
  *          .baseAddr = EUSCI_A1_BASE,
@@ -166,11 +200,13 @@ typedef struct UARTEUSCIA_BaudrateConfig {
  *          .bitOrder  = EUSCI_A_UART_LSB_FIRST,
  *          .numBaudrateEntries = sizeof(uartUSCIABaudrates/UARTEUSCIA_BaudrateConfig),
  *          .baudrateLUT = uartUSCIABaudrates
+ *          .ringBufPtr  = uartMSP432RingBuffer[1],
+ *          .ringBufSize = sizeof(uartMSP432RingBuffer[1])
  *      },
  *  };
  *  @endcode
  */
-typedef struct UARTEUSCIA_HWAttrs {
+typedef struct UARTEUSCIA_HWAttrsV1 {
     /*! EUSCI_A_UART Peripheral's base address */
     unsigned int baseAddr;
     /*! EUSCI_A_UART Clock source */
@@ -181,7 +217,11 @@ typedef struct UARTEUSCIA_HWAttrs {
     unsigned int numBaudrateEntries;
     /*!< Pointer to a table of possible UARTEUSCIA_BaudrateConfig entries */
     UARTEUSCIA_BaudrateConfig const *baudrateLUT;
-} UARTEUSCIA_HWAttrs;
+    /*! Pointer to a application ring buffer */
+    unsigned char  *ringBufPtr;
+    /*! Size of ringBufPtr */
+    size_t          ringBufSize;
+} UARTEUSCIA_HWAttrsV1;
 
 /*!
  *  @brief      UARTEUSCIA Object
@@ -193,29 +233,46 @@ typedef struct UARTEUSCIA_Object {
     bool                 isOpen;           /* Status for open */
     UART_Mode            readMode;         /* Mode for all read calls */
     UART_Mode            writeMode;        /* Mode for all write calls */
-    unsigned int         readTimeout;      /* Timeout for read semaphore */
-    unsigned int         writeTimeout;     /* Timeout for write semaphore */
-    UART_Callback        readCallback;     /* Pointer to read callback */
-    UART_Callback        writeCallback;    /* Pointer to write callback */
     UART_ReturnMode      readReturnMode;   /* Receive return mode */
     UART_DataMode        readDataMode;     /* Type of data being read */
     UART_DataMode        writeDataMode;    /* Type of data being written */
     UART_Echo            readEcho;         /* Echo received data back */
+    /*
+     * Flag to determine if a timeout has occurred when the user called
+     * UART_read(). This flag is set by the timeoutClk clock object.
+     */
+    bool                 bufTimeout:1;
+    /*
+     * Flag to determine when an ISR needs to perform a callback; in both
+     * UART_MODE_BLOCKING or UART_MODE_CALLBACK
+     */
+    bool                 callCallback:1;
+    /*
+     * Flag to determine if the ISR is in control draining the ring buffer
+     * when in UART_MODE_CALLBACK
+     */
+    bool             drainByISR:1;
+
+    Clock_Struct         timeoutClk;       /* Clock object to for timeouts */
+    /* UARTEUSCIA read variables */
+    RingBuf_Object       ringBuffer;       /* local circular buffer object */
+    /* A complement pair of read functions for both the ISR and UART_read() */
+    UARTEUSCIA_FxnSet    readFxns;
+    void                *readBuf;          /* Buffer data pointer */
+    size_t               readSize;         /* Chars remaining in buffer */
+    size_t               readCount;        /* Number of Chars read */
+    Semaphore_Struct     readSem;          /* UARTEUSCIA read semaphore */
+    unsigned int         readTimeout;      /* Timeout for read semaphore */
+    UART_Callback        readCallback;     /* Pointer to read callback */
 
     /* UARTEUSCIA write variables */
     const void          *writeBuf;         /* Buffer data pointer */
     size_t               writeCount;       /* Number of Chars sent */
     size_t               writeSize;        /* Chars remaining in buffer */
     bool                 writeCR;          /* Write a return character */
-
-    /* UARTEUSCIA receive variables */
-    void                *readBuf;          /* Buffer data pointer */
-    size_t               readCount;        /* Number of Chars read */
-    size_t               readSize;         /* Chars remaining in buffer */
-
-    /* UARTEUSCIA SYS/BIOS objects */
     Semaphore_Struct     writeSem;         /* UARTEUSCIA write semaphore */
-    Semaphore_Struct     readSem;          /* UARTEUSCIA read semaphore */
+    unsigned int         writeTimeout;     /* Timeout for write semaphore */
+    UART_Callback        writeCallback;    /* Pointer to write callback */
 } UARTEUSCIA_Object, *UARTEUSCIA_Handle;
 
 #ifdef __cplusplus

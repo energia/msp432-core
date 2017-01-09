@@ -1178,7 +1178,7 @@ struct ti_sysbios_family_arm_m3_Hwi_Module_State {
     __TA_ti_sysbios_family_arm_m3_Hwi_Module_State__excStack excStack;
     xdc_Ptr isrStack;
     xdc_Ptr isrStackBase;
-    xdc_SizeT isrStackSize;
+    xdc_Ptr isrStackSize;
     xdc_Ptr vectorTableBase;
     xdc_UInt swiTaskKeys;
     xdc_Ptr dispatchTable;

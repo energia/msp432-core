@@ -177,7 +177,7 @@
  *  # Not Supported Functionality #
  *  TBD
  *
- * # Use Cases @anchor ADCBuf_USE_CASES #
+ * # Use Cases #
  * ## Basic one-shot conversion #
  *  Perform one conversion on Board_ADCCHANNEL_A1 in ::ADCBuf_RETURN_MODE_BLOCKING.
  *  @code
@@ -200,7 +200,7 @@
  *      blockingConversion.samplesRequestedCount = ADCBUFFERSIZE;
  *
  *      if (adcBufHandle) {
- *          if (!ADCBuf_convert(adcBuf, &continuousConversion, 1)) {
+ *          if (!ADCBuf_convert(adcBuf, &blockingConversion, 1)) {
  *              // handle error
  *          }
  *          else {

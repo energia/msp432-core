@@ -39,33 +39,42 @@
 #include <ti/drivers/UART.h>
 
 #include <ti/sysbios/knl/Semaphore.h>
+#include <ti/sysbios/knl/Clock.h>
 #include <ti/sysbios/gates/GateMutex.h>
 
-#define SERIAL_BUFFER_SIZE  32
+#define SERIAL_RX_BUFFER_SIZE  128
+#define SERIAL_TX_BUFFER_SIZE  128
 
 class HardwareSerial : public Stream
 {
 
     private:
         bool begun;
-        unsigned char rxBuffer[SERIAL_BUFFER_SIZE];
+        bool blockingModeEnabled;
+        unsigned char rxBuffer[SERIAL_RX_BUFFER_SIZE];
         volatile unsigned long rxWriteIndex;
         volatile unsigned long rxReadIndex;
+        unsigned char txBuffer[SERIAL_TX_BUFFER_SIZE];
+        volatile unsigned long txWriteIndex;
+        volatile unsigned long txReadIndex;
+        volatile bool txActive;
         unsigned long baudRate;
         uint8_t uartModule;
         UART_Handle uart;
-        UART_Callback rxCallback; 
-        Semaphore_Struct rxSemaphore;
+        UART_Callback rxCallback;
+        UART_Callback txCallback;
         GateMutex_Struct gate;
-        void init(unsigned long module, UART_Callback callback);
+        void init(unsigned long module, UART_Callback rxCallback, UART_Callback txCallback);
         void flushAll(void);
+        void primeTx(void);
 
     public:
         operator bool();// Arduino compatibility (see StringLength example)
         HardwareSerial(void);
         HardwareSerial(unsigned long);
-        HardwareSerial(unsigned long, UART_Callback);
+        HardwareSerial(unsigned long, UART_Callback, UART_Callback);
         void begin(unsigned long);
+        void begin(unsigned long, bool);
         void setModule(unsigned long);
         void setPins(unsigned long);
         void acquire(void);  /* acquire serial port for this thread */
@@ -76,6 +85,7 @@ class HardwareSerial : public Stream
         virtual int read(void);
         virtual void flush(void);
         void readCallback(UART_Handle uart, void *buf, size_t count);
+        void writeCallback(UART_Handle uart, void *buf, size_t count);
         virtual size_t write(uint8_t c);
         virtual size_t write(const uint8_t *buffer, size_t size);
         using Print::write; // pull in write(str) from Print

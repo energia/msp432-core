@@ -256,7 +256,7 @@ __STATIC_INLINE void UDMACC26XX_init(UDMACC26XX_Handle handle)
     UDMACC26XX_Object           *object;
 
     /* Get the pointer to the object */
-    object = handle->object;
+    object = (UDMACC26XX_Object *)(handle->object);
 
     /* mark the module as available */
     object->isOpen = FALSE;
@@ -297,7 +297,7 @@ __STATIC_INLINE void UDMACC26XX_channelEnable(UDMACC26XX_Handle handle, uint32_t
     UDMACC26XX_HWAttrs const *hwAttrs;
 
     /* Get the pointer to the hwAttrs */
-    hwAttrs = handle->hwAttrs;
+    hwAttrs = (UDMACC26XX_HWAttrs *)(handle->hwAttrs);
 
     /* Enable DMA channel */
     HWREG(hwAttrs->baseAddr + UDMA_O_SETCHANNELEN) = channelBitMask;
@@ -326,7 +326,7 @@ __STATIC_INLINE bool UDMACC26XX_channelDone(UDMACC26XX_Handle handle, uint32_t c
     UDMACC26XX_HWAttrs const *hwAttrs;
 
     /* Get the pointer to the hwAttrs */
-    hwAttrs = handle->hwAttrs;
+    hwAttrs = (UDMACC26XX_HWAttrs *)(handle->hwAttrs);
 
     /* Check if REQDONE is set for a specific channel */
     return (uDMAIntStatus(hwAttrs->baseAddr) & channelBitMask) ? true : false;
@@ -354,7 +354,7 @@ __STATIC_INLINE void UDMACC26XX_clearInterrupt(UDMACC26XX_Handle handle, uint32_
     UDMACC26XX_HWAttrs const *hwAttrs;
 
     /* Get the pointer to the hwAttrs and object */
-    hwAttrs = handle->hwAttrs;
+    hwAttrs = (UDMACC26XX_HWAttrs *)(handle->hwAttrs);
 
     /* Clear UDMA done interrupt */
     uDMAIntClear(hwAttrs->baseAddr, channelBitMask);
@@ -382,7 +382,7 @@ __STATIC_INLINE void UDMACC26XX_channelDisable(UDMACC26XX_Handle handle, uint32_
     UDMACC26XX_HWAttrs const *hwAttrs;
 
     /* Get the pointer to the hwAttrs and object */
-    hwAttrs = handle->hwAttrs;
+    hwAttrs = (UDMACC26XX_HWAttrs *)(handle->hwAttrs);
 
     /* disable DMA channel */
     uDMAChannelDisable(hwAttrs->baseAddr, channelBitMask);

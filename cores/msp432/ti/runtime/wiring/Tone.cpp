@@ -48,7 +48,6 @@ static uint8_t tonePin;
 static bool toneState;
 static unsigned long toneDuration;
 static unsigned long mark;
-static unsigned int currentFrequency;
 
 static void ToneIntHandler(UArg arg0)
 {
@@ -84,8 +83,6 @@ void tone(uint8_t _pin, unsigned int frequency, unsigned long duration)
         togglePin = false;
         frequency = 1000;
     }
-
-    currentFrequency = frequency;
 
     if (_pin != tonePin) {
         pinMode(tonePin, OUTPUT);

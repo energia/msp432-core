@@ -33,9 +33,17 @@
 #undef ti_sysbios_heaps_HeapMem_alloc
 #define ti_sysbios_heaps_HeapMem_alloc ti_sysbios_heaps_HeapMem_alloc__E
 
+/* allocUnprotected */
+#undef ti_sysbios_heaps_HeapMem_allocUnprotected
+#define ti_sysbios_heaps_HeapMem_allocUnprotected ti_sysbios_heaps_HeapMem_allocUnprotected__E
+
 /* free */
 #undef ti_sysbios_heaps_HeapMem_free
 #define ti_sysbios_heaps_HeapMem_free ti_sysbios_heaps_HeapMem_free__E
+
+/* freeUnprotected */
+#undef ti_sysbios_heaps_HeapMem_freeUnprotected
+#define ti_sysbios_heaps_HeapMem_freeUnprotected ti_sysbios_heaps_HeapMem_freeUnprotected__E
 
 /* isBlocking */
 #undef ti_sysbios_heaps_HeapMem_isBlocking
