@@ -19,13 +19,13 @@ compiler.warning_flags.all=-Wall -Wextra
 
 compiler.path={runtime.tools.arm-none-eabi-gcc.path}/bin/
 compiler.c.cmd=arm-none-eabi-gcc
-compiler.c.flags=-c -g -Os {compiler.warning_flags} -ffunction-sections -fdata-sections -MMD
+compiler.c.flags=-c -g -Os {compiler.warning_flags} -ffunction-sections -fdata-sections
 compiler.cpp.elf.cmd=arm-none-eabi-g++
 compiler.c.elf.flags=-Os -Wl,--gc-sections
 compiler.S.cmd=arm-none-eabi-gcc
 compiler.S.flags=-c -g -x assembler-with-cpp
 compiler.cpp.cmd=arm-none-eabi-g++
-compiler.cpp.flags=-c -g -Os {compiler.warning_flags} -ffunction-sections -fdata-sections -fno-threadsafe-statics -fno-rtti -fno-exceptions -MMD
+compiler.cpp.flags=-c -g -Os {compiler.warning_flags} -ffunction-sections -fdata-sections -fno-threadsafe-statics -fno-rtti -fno-exceptions
 compiler.ar.cmd=arm-none-eabi-ar
 compiler.ar.flags=rcs
 compiler.objcopy.cmd=arm-none-eabi-objcopy
@@ -36,7 +36,7 @@ compiler.ldflags=
 compiler.size.cmd=arm-none-eabi-size
 
 compiler.driverlib.c.flags="-I{build.system.path}/driverlib/MSP432P4xx" "-I{build.system.path}/driverlib" "-I{build.system.path}/inc" "-I{build.system.path}/inc/CMSIS/" "-I{build.system.path}"
-compiler.emt.c.flags="-I{build.core.path}/ti/runtime/wiring/" "-I{build.core.path}/ti/runtime/wiring/msp432"
+compiler.emt.c.flags="-I{build.core.path}/ti/runtime/wiring/" "-I{build.core.path}/ti/runtime/wiring/msp432" "-I{runtime.platform.path}"
 
 # this can be overriden in boards.txt
 build.extra_flags=-mcpu=cortex-m4 -mthumb -mfloat-abi=hard -mfpu=fpv4-sp-d16 -mabi=aapcs -g -Dxdc_target_types__=gnu/targets/arm/std.h -Dxdc_target_name__=M4F -Dxdc_cfg__xheader__="configPkg/package/cfg/energia_pm4fg.h" -DTARGET_IS_MSP432P4XX -DBOARD_MSP_EXP432P401R -Dxdc__nolocalstring=1 -D__MSP432P401R__ -DCORE_VERSION={version.string}
