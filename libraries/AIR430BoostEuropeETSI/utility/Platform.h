@@ -28,9 +28,9 @@
  */
 #include <Energia.h>
 #include <SPI.h>
-#include <driverlib/rom_map.h>
-#include <driverlib/gpio.h>
-#include <driverlib/spi.h>
+#include <driverlib/MSP432P4xx/rom_map.h>
+#include <driverlib/MSP432P4xx/gpio.h>
+#include <driverlib/MSP432P4xx/spi.h>
 
 extern "C" { 
   #include "CC1101.h"
